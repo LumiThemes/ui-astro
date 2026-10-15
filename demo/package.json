@@ -1,0 +1,13 @@
+{
+  "name": "ui-astro-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 4410",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@arraypress/ui-astro": "file:..",
+    "astro": "^7.3.8"
+  }
+}

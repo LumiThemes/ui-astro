@@ -1,0 +1,103 @@
+---
+/**
+ * Equalizer: a few bars that rise into place with an overshoot, one after
+ * another, and, while `playing` (or `.is-playing` set from your player),
+ * bounce like a level meter. A logo mark for a music store, a "now
+ * playing" sign on a track. Pure CSS; still with reduced motion.
+ *
+ * From the WaveGrid (SampleGrid) theme's logo.
+ *
+ * @example
+ * <Equalizer bars={5} playing color="#a3e635" />
+ */
+
+interface Props {
+	/** How many bars. Default 5. */
+	bars?: number;
+	/** Bounce like a meter. Default false. */
+	playing?: boolean;
+	/** The bars' colour. Default the text colour. */
+	color?: string;
+	/** The bars' resting heights, 0–1, one a bar (repeated if fewer). */
+	heights?: number[];
+	/** Width, a CSS length. Default `1.25em`. */
+	width?: string;
+	/** Height, a CSS length. Default `1em`. */
+	height?: string;
+	/** A label for screen readers; without one it is decoration. */
+	label?: string;
+	/** Classes for the element. */
+	class?: string;
+}
+
+const {
+	bars = 5,
+	playing = false,
+	color = 'currentColor',
+	heights = [0.55, 0.9, 0.7, 1, 0.6],
+	width = '1.25em',
+	height = '1em',
+	label,
+	class: className,
+} = Astro.props;
+---
+
+<span
+	class:list={['ui-equalizer', { 'is-playing': playing }, className]}
+	style={`--eq-color: ${color}; --eq-width: ${width}; --eq-height: ${height}`}
+	role={label ? 'img' : undefined}
+	aria-label={label}
+	aria-hidden={label ? undefined : 'true'}
+>
+	{Array.from({ length: bars }, (_, i) => <span class="bar" style={`--h: ${heights[i % heights.length]}; --i: ${i}`} />)}
+</span>
+
+<style>
+	.ui-equalizer {
+		display: inline-flex;
+		align-items: flex-end;
+		gap: 12%;
+		width: var(--eq-width);
+		height: var(--eq-height);
+		vertical-align: middle;
+	}
+	/* Each bar grows up into place with an overshoot, a little after the one before. */
+	.bar {
+		flex: 1;
+		height: calc(var(--h) * 100%);
+		border-radius: 1px;
+		background: var(--eq-color);
+		transform-origin: bottom;
+		animation: ui-eq-settle 0.62s cubic-bezier(0.2, 0.85, 0.25, 1) calc(min(var(--i), 5) * 55ms) both;
+	}
+	@keyframes ui-eq-settle {
+		0% {
+			transform: scaleY(0.18);
+			opacity: 0.55;
+		}
+		58% {
+			transform: scaleY(1.14);
+		}
+		100% {
+			transform: scaleY(1);
+			opacity: 1;
+		}
+	}
+	.ui-equalizer:global(.is-playing) .bar {
+		animation: ui-eq-bounce 0.9s ease-in-out calc(var(--i) * -0.17s) infinite alternate;
+	}
+	@keyframes ui-eq-bounce {
+		from {
+			transform: scaleY(0.35);
+		}
+		to {
+			transform: scaleY(1);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.bar,
+		.ui-equalizer:global(.is-playing) .bar {
+			animation: none;
+		}
+	}
+</style>

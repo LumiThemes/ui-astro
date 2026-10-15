@@ -1,0 +1,63 @@
+{
+  "name": "@arraypress/ui-astro",
+  "version": "0.1.0",
+  "description": "Small UI pieces for Astro sites, as components: a countdown, loading skeletons, a formatted range slider, a file dropzone, a scroll-drawn timeline, CSS tooltips, page chrome and music-shop artwork. Plain CSS and a few lines of script, no dependencies, with reduced motion and view transitions handled.",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "types": "./src/index.d.ts"
+    },
+    "./*.astro": "./src/components/*.astro",
+    "./*.css": "./src/styles/*.css",
+    "./runtime/*": {
+      "import": "./src/runtime/*.js",
+      "types": "./src/runtime/*.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "AGENTS.md",
+    "COMPONENTS.md"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "docs": "node scripts/components-doc.mjs"
+  },
+  "keywords": [
+    "astro",
+    "astro-component",
+    "ui",
+    "countdown",
+    "skeleton",
+    "range-slider",
+    "dropzone",
+    "timeline",
+    "tooltip",
+    "back-to-top",
+    "scroll-progress"
+  ],
+  "author": "ArrayPress Limited",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "astro": "^6 || ^7"
+  },
+  "peerDependenciesMeta": {
+    "astro": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arraypress/ui-astro.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

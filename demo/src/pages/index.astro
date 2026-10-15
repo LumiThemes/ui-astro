@@ -1,0 +1,240 @@
+---
+/** The demo: a small record label's shop page, with every piece in @arraypress/ui-astro in place. */
+import BackToTop from '@arraypress/ui-astro/BackToTop.astro';
+import Countdown from '@arraypress/ui-astro/Countdown.astro';
+import Dropzone from '@arraypress/ui-astro/Dropzone.astro';
+import Equalizer from '@arraypress/ui-astro/Equalizer.astro';
+import Range from '@arraypress/ui-astro/Range.astro';
+import ScrollProgress from '@arraypress/ui-astro/ScrollProgress.astro';
+import Skeleton from '@arraypress/ui-astro/Skeleton.astro';
+import Timeline from '@arraypress/ui-astro/Timeline.astro';
+import VinylSleeve from '@arraypress/ui-astro/VinylSleeve.astro';
+import '@arraypress/ui-astro/tooltip.css';
+import '../styles/demo.css';
+
+const releases = [
+	{ cover: '/covers/night-bus.svg', title: 'Night Bus', artist: 'Mara Quill', price: '£14', tags: ['24-bit WAV', 'Stems'] },
+	{ cover: '/covers/glasshouse.svg', title: 'Glasshouse', artist: 'The Lowlands', price: '£12', tags: ['24-bit WAV'] },
+	{ cover: '/covers/static-bloom.svg', title: 'Static Bloom', artist: 'Okon', price: '£16', tags: ['24-bit WAV', 'Stems', 'Vinyl'] },
+];
+const tips: Record<string, string> = {
+	'24-bit WAV': 'Lossless masters, as they left the studio',
+	Stems: 'Drums, bass and keys as separate files for remixing',
+	Vinyl: 'Also on 180g vinyl, shipped from Leeds',
+};
+---
+
+<html lang="en-GB">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>ui-astro · Tidewater Records</title>
+	</head>
+	<body>
+		<ScrollProgress color="#a3e635" />
+
+		<header class="top">
+			<a class="brand" href="/">
+				<Equalizer playing color="#a3e635" label="Tidewater Records" />
+				Tidewater
+			</a>
+			<nav>
+				<a href="#releases">Releases</a>
+				<a href="#licence">Licences</a>
+				<a href="#demos">Send a demo</a>
+				<a href="#story">Our story</a>
+				<button type="button" class="icon" data-tip="Your basket is empty" data-tip-side="bottom" aria-label="Basket: empty">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M6 7h12l-1 13H7L6 7Z"></path>
+						<path d="M9 7a3 3 0 0 1 6 0"></path>
+					</svg>
+				</button>
+			</nav>
+		</header>
+
+		<main>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">Drop 07</p>
+					<h1>Low Tide</h1>
+					<p class="lede">Eight tracks of slow-moving dub techno from Mara Quill, mastered for headphones and big rooms alike.</p>
+					<Countdown target="2026-12-07T18:00:00Z" label="Goes live in" ended="Live now" />
+				</div>
+				<VinylSleeve cover="/covers/low-tide.svg" alt="Low Tide, by Mara Quill" class="hero-vinyl" />
+			</section>
+
+			<section id="releases" class="block">
+				<header>
+					<p class="piece">&lt;VinylSleeve&gt; · &lt;Equalizer&gt; · tooltip.css</p>
+					<h2>New releases</h2>
+					<p>Hover a sleeve to pull the record out; press play and it spins. The tags explain themselves on hover or focus.</p>
+				</header>
+				<div class="releases">
+					{
+						releases.map((r) => (
+							<article class="release" data-release>
+								<VinylSleeve cover={r.cover} alt="" />
+								<div class="meta">
+									<div>
+										<h3>{r.title}</h3>
+										<p>{r.artist}</p>
+									</div>
+									<span class="price">{r.price}</span>
+								</div>
+								<ul class="tags">
+									{r.tags.map((tag) => (
+										<li tabindex="0" data-tip={tips[tag]} aria-label={`${tag}: ${tips[tag]}`}>
+											{tag}
+										</li>
+									))}
+								</ul>
+								<button type="button" class="play" aria-pressed="false">
+									<Equalizer bars={4} />
+									<span class="play-label">Play preview</span>
+								</button>
+							</article>
+						))
+					}
+				</div>
+			</section>
+
+			<section id="licence" class="block split">
+				<header>
+					<p class="piece">&lt;Range&gt;</p>
+					<h2>Licence a track</h2>
+					<p>Sync for a film, a game or an advert. Set the reach and the term; the price follows, written in pounds.</p>
+				</header>
+				<div class="card calc">
+					<Range id="views" label="Expected views" min={10000} max={5000000} step={10000} value={250000} compact decimals={1} color="#a3e635" />
+					<Range id="years" label="Term (years)" min={1} max={10} value={2} color="#a3e635" />
+					<p class="total">From <output id="quote">£0</output></p>
+				</div>
+			</section>
+
+			<section id="demos" class="block split">
+				<header>
+					<p class="piece">&lt;Dropzone&gt;</p>
+					<h2>Send us a demo</h2>
+					<p>WAV or MP3, up to three tracks. Drop them on, or click to choose; while they upload a line scans down the zone.</p>
+				</header>
+				<div class="stack">
+					<Dropzone id="demo-zone" name="demo" accept="audio/*,.wav,.mp3" multiple color="#38bdf8" label="Upload your demo">
+						<div>
+							<h3>Drop your tracks here</h3>
+							<p>WAV or MP3, or click to choose</p>
+						</div>
+						<div slot="busy">
+							<h3>Uploading <span id="demo-files"></span></h3>
+							<p>Checking levels and loudness</p>
+						</div>
+					</Dropzone>
+					<button type="button" class="ghost" id="scan">Show the busy state</button>
+				</div>
+			</section>
+
+			<section class="block">
+				<header>
+					<p class="piece">&lt;Countdown&gt;</p>
+					<h2>On the calendar</h2>
+					<p>Without seconds for something days away; once a date passes, its message instead. With reduced motion, the end date.</p>
+				</header>
+				<div class="dates">
+					<div class="card">
+						<Countdown target="2026-11-30T23:59:00Z" label="Autumn sale ends in" hideSeconds />
+					</div>
+					<div class="card">
+						<Countdown target="2026-09-12T18:00:00Z" label="Drop 06" ended="Out now: Night Bus" />
+					</div>
+				</div>
+			</section>
+
+			<section class="block">
+				<header>
+					<p class="piece">&lt;Skeleton&gt;</p>
+					<h2>Back catalogue</h2>
+					<p>Loading the next page: placeholders the shape of what is coming, so nothing jumps.</p>
+				</header>
+				<div class="loading">
+					<Skeleton variant="card" label="Loading releases" />
+					<Skeleton variant="card" label="Loading releases" />
+					<div class="rows">
+						<Skeleton variant="row" />
+						<Skeleton variant="row" />
+						<Skeleton lines={4} />
+					</div>
+				</div>
+			</section>
+
+			<section id="story" class="block split">
+				<header>
+					<p class="piece">&lt;Timeline&gt;</p>
+					<h2>Our story</h2>
+					<p>The line fills as you scroll, and the step we are on now breathes.</p>
+				</header>
+				<Timeline
+					current={3}
+					color="#a3e635"
+					items={[
+						{ date: '2015', title: 'A tape in Leeds', text: 'Forty cassettes of a friend’s first EP, sold at a market stall.' },
+						{ date: '2018', title: 'Going digital', text: 'Lossless downloads direct from the site, stems for every release.' },
+						{ date: '2021', title: 'Pressing plant', text: 'Our own short-run vinyl, a hundred copies at a time.' },
+						{ date: 'Now', title: 'Drop 07', text: 'Mara Quill’s Low Tide, out on the seventh of December.' },
+						{ date: 'Next', title: 'A label night', text: 'Every artist on one bill, spring 2027.' },
+					]}
+				/>
+			</section>
+		</main>
+
+		<footer class="foot">
+			<p>Tidewater Records is a made-up label, here to show <code>@arraypress/ui-astro</code>. <span class="hint">&lt;ScrollProgress&gt; along the top, &lt;BackToTop&gt; at the bottom right.</span></p>
+		</footer>
+
+		<BackToTop />
+
+		<script>
+			import { numberFormat } from '@arraypress/ui-astro';
+
+			// Play buttons: one release plays at a time, its sleeve spinning and its meter bouncing.
+			const releases = [...document.querySelectorAll<HTMLElement>('[data-release]')];
+			releases.forEach((release) => {
+				const button = release.querySelector<HTMLButtonElement>('.play');
+				button?.addEventListener('click', () => {
+					const start = !release.classList.contains('is-on');
+					releases.forEach((other) => {
+						const on = start && other === release;
+						other.classList.toggle('is-on', on);
+						other.querySelector('.ui-vinyl')?.classList.toggle('is-playing', on);
+						other.querySelector('.ui-equalizer')?.classList.toggle('is-playing', on);
+						const label = other.querySelector('.play-label');
+						if (label) label.textContent = on ? 'Pause' : 'Play preview';
+						other.querySelector('.play')?.setAttribute('aria-pressed', String(on));
+					});
+				});
+			});
+
+			// The licence quote: £120 a year per 100,000 views, at least £250.
+			const views = document.getElementById('views') as HTMLInputElement;
+			const years = document.getElementById('years') as HTMLInputElement;
+			const quote = document.getElementById('quote') as HTMLOutputElement;
+			const pounds = numberFormat({ currency: 'GBP', decimals: 0 });
+			const price = () => (quote.textContent = pounds(Math.max(250, (Number(views.value) / 100000) * 120 * Number(years.value))));
+			views.addEventListener('input', price);
+			years.addEventListener('input', price);
+			price();
+
+			// The demo upload: show the scan for a few seconds once files arrive, or on request.
+			const zone = document.getElementById('demo-zone') as HTMLElement;
+			const names = document.getElementById('demo-files') as HTMLElement;
+			const scan = (label: string) => {
+				names.textContent = label;
+				zone.dataset.busy = '';
+				setTimeout(() => delete zone.dataset.busy, 3000);
+			};
+			zone.addEventListener('change', (e) => {
+				const files = (e.target as HTMLInputElement).files;
+				scan(files?.length === 1 ? files[0].name : `${files?.length ?? 0} tracks`);
+			});
+			document.getElementById('scan')?.addEventListener('click', () => scan('3 tracks'));
+		</script>
+	</body>
+</html>
