@@ -54,7 +54,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arraypress/ui-astro.git"
+    "url": "git+https://github.com/LumiThemes/ui-astro.git"
   },
   "publishConfig": {
     "access": "public",
