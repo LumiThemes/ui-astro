@@ -19,6 +19,10 @@ Pick by what is asked for:
 | Page chrome | `<ScrollProgress>`, `<BackToTop>`, once in the layout |
 | An announcement across the top (a launch, a sale) | `<NoticeBar>` (change its `id` to show a new one to people who closed the last) |
 | Questions and answers | `<Faq>` (FAQPage JSON-LD comes with it; `jsonLd={false}` if the page has its own) |
+| An install or setup command to copy, with a choice of ways | `<InstallCommand>` |
+| The header's menu on phones | `<MobileMenu>` (hide your wide-screen links below its `breakpoint`) |
+| A main action with more behind an arrow (download formats, buy options) | `<SplitButton>`; listen for `ui-action` |
+| Brand colours to copy (a press kit, a style guide) | `<CopySwatch>` |
 | A music or digital-goods shop | `<VinylSleeve>`, `<Equalizer>` (set `.is-playing` from your player) |
 
 Things that trip people up:
@@ -28,6 +32,10 @@ Things that trip people up:
 - **`<VinylSleeve>` and `<Equalizer>` play while `.is-playing` is on them.** Toggle the class from your player; `playing` only sets it at first.
 - **Tooltips are not read out.** A tooltip drawn by CSS is invisible to screen readers: put the same words in `aria-label` or the element's text.
 - **Styling a component's element** from the page needs `:global(.its-class)`, since the element belongs to the component. Every root class starts `ui-` (`.ui-dropzone`, `.ui-vinyl`…).
+- **`<MobileMenu>`'s panel is fixed to the window,** so `top` is the header's height (`calc(4rem + var(--ui-notice-h, 0px))` under a `<NoticeBar>`). A `backdrop-filter`, `filter` or `transform` on the header fixes the panel to the header instead: then pass `top="100%"`. The panel's foot is measured, so it always ends at the window's.
+- **`<SplitButton>` buttons do nothing by themselves.** Give the main action and menu items an `action` and listen for `ui-action` on the component (`e.detail.action`); links (`href`) just go.
+- **Icons are SVG strings** (`icon` on `<InstallCommand>` options and links, `<SplitButton>`, `<MobileMenu>`'s `cta`): trusted markup, set as HTML. So are `<InstallCommand>` notes.
+- **Menus and the mobile panel use `Canvas` and `CanvasText`** unless `--ui-menu-bg` / `--ui-menu-fg` (or `--ui-mobile-menu-bg` / `-fg`) are set, so a dark site needs `color-scheme: dark` or those set. Buttons and the current link use `--ui-accent` (default `#2563eb`) and `--ui-accent-ink`.
 - **Do not reimplement** reduced motion or view-transition restarts around the components: they do both.
 
 ## Working on this package

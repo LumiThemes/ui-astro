@@ -1,14 +1,18 @@
 ---
 /** The demo: a small record label's shop page, with every piece in @arraypress/ui-astro in place. */
 import BackToTop from '@arraypress/ui-astro/BackToTop.astro';
+import CopySwatch from '@arraypress/ui-astro/CopySwatch.astro';
 import Countdown from '@arraypress/ui-astro/Countdown.astro';
 import Dropzone from '@arraypress/ui-astro/Dropzone.astro';
 import Equalizer from '@arraypress/ui-astro/Equalizer.astro';
 import Faq from '@arraypress/ui-astro/Faq.astro';
+import InstallCommand from '@arraypress/ui-astro/InstallCommand.astro';
+import MobileMenu from '@arraypress/ui-astro/MobileMenu.astro';
 import NoticeBar from '@arraypress/ui-astro/NoticeBar.astro';
 import Range from '@arraypress/ui-astro/Range.astro';
 import ScrollProgress from '@arraypress/ui-astro/ScrollProgress.astro';
 import Skeleton from '@arraypress/ui-astro/Skeleton.astro';
+import SplitButton from '@arraypress/ui-astro/SplitButton.astro';
 import Timeline from '@arraypress/ui-astro/Timeline.astro';
 import VinylSleeve from '@arraypress/ui-astro/VinylSleeve.astro';
 import '@arraypress/ui-astro/tooltip.css';
@@ -19,6 +23,18 @@ const releases = [
 	{ cover: '/covers/glasshouse.svg', title: 'Glasshouse', artist: 'The Lowlands', price: '£12', tags: ['24-bit WAV'] },
 	{ cover: '/covers/static-bloom.svg', title: 'Static Bloom', artist: 'Okon', price: '£16', tags: ['24-bit WAV', 'Stems', 'Vinyl'] },
 ];
+const nav = [
+	{ label: 'Releases', href: '#releases' },
+	{ label: 'Licences', href: '#licence' },
+	{ label: 'Send a demo', href: '#demos' },
+	{ label: 'Our story', href: '#story' },
+];
+/** Line icons for the demo's menus. */
+const line = (d: string) => `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const terminal = line('m4 17 6-6-6-6m8 14h8');
+const box = line('M21 8 12 3 3 8v8l9 5 9-5V8ZM3 8l9 5 9-5M12 13v8');
+const spark = line('M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18M6 18l2.5-2.5m7-7L18 6');
+const download = line('M12 3v12m-5-5 5 5 5-5M5 21h14');
 const tips: Record<string, string> = {
 	'24-bit WAV': 'Lossless masters, as they left the studio',
 	Stems: 'Drums, bass and keys as separate files for remixing',
@@ -42,16 +58,25 @@ const tips: Record<string, string> = {
 				Tidewater
 			</a>
 			<nav>
-				<a href="#releases">Releases</a>
-				<a href="#licence">Licences</a>
-				<a href="#demos">Send a demo</a>
-				<a href="#story">Our story</a>
+				{nav.map((l) => <a href={l.href}>{l.label}</a>)}
 				<button type="button" class="icon" data-tip="Your basket is empty" data-tip-side="bottom" aria-label="Basket: empty">
 					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 						<path d="M6 7h12l-1 13H7L6 7Z"></path>
 						<path d="M9 7a3 3 0 0 1 6 0"></path>
 					</svg>
 				</button>
+				<MobileMenu
+					links={nav}
+					current="#releases"
+					cta={{ label: 'Buy Low Tide', href: '#stems' }}
+					more={[
+						{ label: 'Press kit', href: '#press' },
+						{ label: 'Questions', href: '#questions' },
+						{ label: 'Stems', href: '#stems' },
+						{ label: 'Back to top', href: '#' },
+					]}
+					top="100%"
+				/>
 			</nav>
 		</header>
 
@@ -135,6 +160,51 @@ const tips: Record<string, string> = {
 				</div>
 			</section>
 
+			<section id="stems" class="block split">
+				<header>
+					<p class="piece">&lt;SplitButton&gt; · &lt;InstallCommand&gt;</p>
+					<h2>Buy it, or pull the stems</h2>
+					<p>The arrow opens other formats; buttons in it send a <code>ui-action</code> event. The bar's menu switches how to fetch the stems, and copies the command.</p>
+				</header>
+				<div class="stack">
+					<SplitButton
+						label="Buy WAV · £14"
+						action="wav"
+						icon={download}
+						menuLabel="Other formats"
+						items={[
+							{ label: 'FLAC', note: '24-bit', action: 'flac' },
+							{ label: 'MP3', note: '320 kbps', action: 'mp3' },
+							{ divider: true },
+							{ label: 'Stems', note: '.zip', action: 'stems' },
+							{ label: 'Vinyl', note: '£28', href: '#releases' },
+							{ label: 'Cassette', note: 'Sold out', action: 'tape', disabled: true },
+						]}
+						class="buy"
+					/>
+					<p class="hint" id="action-said" aria-live="polite">Pick a format.</p>
+					<InstallCommand
+						groups={[
+							{
+								title: 'Command line',
+								options: [
+									{ label: 'curl', icon: terminal, prefix: '$ ', command: 'curl -LO https://tidewater.example/stems/low-tide.zip', note: 'Every stem as 24-bit WAV, in one zip.' },
+									{ label: 'tidewater CLI', icon: box, prefix: '$ ', command: 'npx tidewater get low-tide --stems', copy: 'npx tidewater login\nnpx tidewater get low-tide --stems', note: 'Signs you in first (both lines are copied).' },
+								],
+							},
+							{
+								title: 'Your assistant',
+								options: [{ label: 'A prompt', icon: spark, command: 'Fetch the Low Tide stems from tidewater.example and lay them out in a new Ableton set.', note: 'Paste it into your assistant.', tag: 'Prompt' }],
+							},
+						]}
+						links={[
+							{ label: 'Stems', href: '#stems', tag: '.zip', download: true },
+							{ label: 'Artwork', href: '/covers/low-tide.svg', tag: '.svg', download: true },
+						]}
+					/>
+				</div>
+			</section>
+
 			<section class="block">
 				<header>
 					<p class="piece">&lt;Countdown&gt;</p>
@@ -185,6 +255,20 @@ const tips: Record<string, string> = {
 						{ date: 'Next', title: 'A label night', text: 'Every artist on one bill, spring 2027.' },
 					]}
 				/>
+			</section>
+
+			<section id="press" class="block">
+				<header>
+					<p class="piece">&lt;CopySwatch&gt;</p>
+					<h2>Press kit</h2>
+					<p>The label's colours: click one to copy its value. The text picks dark or light ink to read on each.</p>
+				</header>
+				<div class="swatches">
+					<CopySwatch color="#a3e635" name="Lime" format="hex" />
+					<CopySwatch color="#0b0c0e" name="Night" format="rgb" />
+					<CopySwatch color="#f4f3ef" name="Paper" format="hsl" />
+					<CopySwatch color="#38bdf8" name="Tide" />
+				</div>
 			</section>
 
 			<section id="questions" class="block split">
@@ -254,6 +338,12 @@ const tips: Record<string, string> = {
 				scan(files?.length === 1 ? files[0].name : `${files?.length ?? 0} tracks`);
 			});
 			document.getElementById('scan')?.addEventListener('click', () => scan('3 tracks'));
+
+			// The buy button: its actions arrive as one event.
+			const said = document.getElementById('action-said') as HTMLElement;
+			document.querySelector('.buy')?.addEventListener('ui-action', (e) => {
+				said.textContent = `Added to basket: ${(e as CustomEvent<{ action: string }>).detail.action.toUpperCase()}`;
+			});
 		</script>
 	</body>
 </html>

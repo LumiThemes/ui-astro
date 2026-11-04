@@ -1,0 +1,261 @@
+---
+/**
+ * SplitButton: a main action with an arrow attached that opens a menu of
+ * further ones — Download SVG, and PNG sizes and a kit behind the arrow.
+ * The main action and each menu item are a link (`href`) or a button; a
+ * button sends a `ui-action` event from the root with its `action` in
+ * `detail.action`. Items can carry a small note at the end and be split by
+ * dividers. The arrow turns while the menu is open; arrow keys, Home and
+ * End move through it, Escape and a click outside close it. See
+ * src/runtime/split-button.js.
+ *
+ * @example
+ * <SplitButton label="Download SVG" href="/logo.svg" download items={[{ label: 'PNG', note: '512 px', action: 'png-512' }, { divider: true }, { label: 'Favicon kit', note: '.zip', href: '/favicon.zip', download: true }]} />
+ */
+
+interface Item {
+	/** Its text. */
+	label?: string;
+	/** A small note at the end of the row (`512 px`, `.zip`). */
+	note?: string;
+	/** Makes it a link to here. */
+	href?: string;
+	/** For a link: download it (`true`, or the file name). */
+	download?: boolean | string;
+	/** For a link: open in a new tab. */
+	newTab?: boolean;
+	/** For a button: what its `ui-action` event carries. */
+	action?: string;
+	/** For a button: switched off. */
+	disabled?: boolean;
+	/** A dividing line in place of an item. */
+	divider?: boolean;
+}
+
+interface Props {
+	/** The main action's text. Required. */
+	label: string;
+	/** Makes the main action a link to here; without one it is a button. Default none. */
+	href?: string;
+	/** For a linked main action: download it (`true`, or the file name). Default false. */
+	download?: boolean | string;
+	/** For a linked main action: open in a new tab. Default false. */
+	newTab?: boolean;
+	/** For a main action that is a button: what its `ui-action` event carries. Default `main`. */
+	action?: string;
+	/** An icon before the main action's text: trusted SVG markup, about 16px. Default none. */
+	icon?: string;
+	/** The menu (`{ label, note, href, download, newTab, action, disabled }`, or `{ divider: true }`). Required. */
+	items: Item[];
+	/** The arrow's and the menu's name for screen readers. Default `More options`. */
+	menuLabel?: string;
+	/** Which edge the menu lines up with. Default `start`. */
+	align?: 'start' | 'end';
+	/** Classes for the element. */
+	class?: string;
+}
+
+const { label, href, download = false, newTab = false, action = 'main', icon, items, menuLabel = 'More options', align = 'start', class: className } = Astro.props;
+const uid = `ui-split-${Math.random().toString(36).slice(2, 8)}`;
+/** A link's attributes: its address, a download and a new tab. */
+const linkAttrs = (to: string, dl?: boolean | string, tab?: boolean) => ({
+	href: to,
+	...(dl ? { download: dl === true ? '' : dl } : {}),
+	...(tab ? { target: '_blank', rel: 'noopener' } : {}),
+});
+---
+
+<div class:list={['ui-split', align === 'end' && 'is-end', className]} data-ui-split-button>
+	{
+		href ? (
+			<a class="ui-split-main" {...linkAttrs(href, download, newTab)}>
+				{icon && <span class="ui-split-icon" aria-hidden="true" set:html={icon} />}
+				{label}
+			</a>
+		) : (
+			<button type="button" class="ui-split-main" data-action={action}>
+				{icon && <span class="ui-split-icon" aria-hidden="true" set:html={icon} />}
+				{label}
+			</button>
+		)
+	}
+	<button type="button" class="ui-split-more" data-ui-split="more" aria-haspopup="menu" aria-expanded="false" aria-controls={uid} aria-label={menuLabel}>
+		<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+			<path d="m6 9 6 6 6-6"></path>
+		</svg>
+	</button>
+	<div class="ui-split-menu" id={uid} data-ui-split="menu" role="menu" aria-label={menuLabel} hidden>
+		{
+			items.map((it) =>
+				it.divider ? (
+					<hr />
+				) : it.href ? (
+					<a role="menuitem" tabindex="-1" {...linkAttrs(it.href, it.download, it.newTab)}>
+						<span>{it.label}</span>
+						{it.note && <small>{it.note}</small>}
+					</a>
+				) : (
+					<button type="button" role="menuitem" tabindex="-1" data-action={it.action} disabled={it.disabled}>
+						<span>{it.label}</span>
+						{it.note && <small>{it.note}</small>}
+					</button>
+				),
+			)
+		}
+	</div>
+</div>
+
+<script>
+	import { mount } from '../runtime/mount.js';
+	import { splitButton } from '../runtime/split-button.js';
+
+	mount('[data-ui-split-button]', splitButton);
+</script>
+
+<style>
+	.ui-split {
+		--ui-split-bg: var(--ui-accent, #2563eb);
+		--ui-split-fg: var(--ui-accent-ink, #fff);
+		position: relative;
+		display: inline-flex;
+		vertical-align: middle;
+	}
+
+	.ui-split-main,
+	.ui-split-more {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		box-sizing: border-box;
+		min-height: var(--ui-split-h, 44px);
+		margin: 0;
+		border: 0;
+		background: var(--ui-split-bg);
+		color: var(--ui-split-fg);
+		font: inherit;
+		font-size: 0.92rem;
+		font-weight: 600;
+		line-height: 1;
+		text-decoration: none;
+		cursor: pointer;
+		transition: filter 0.15s;
+	}
+
+	.ui-split-main {
+		padding: 0 1.1rem;
+		border-radius: var(--ui-split-radius, 999px) 0 0 var(--ui-split-radius, 999px);
+	}
+
+	.ui-split-more {
+		padding: 0 0.85rem 0 0.75rem;
+		border-left: 1px solid color-mix(in srgb, var(--ui-split-fg) 28%, transparent);
+		border-radius: 0 var(--ui-split-radius, 999px) var(--ui-split-radius, 999px) 0;
+	}
+
+	.ui-split-main:hover,
+	.ui-split-more:hover,
+	.ui-split-more[aria-expanded='true'] {
+		filter: brightness(1.08);
+	}
+
+	.ui-split-main:focus-visible,
+	.ui-split-more:focus-visible {
+		outline: 2px solid var(--ui-split-bg);
+		outline-offset: 2px;
+	}
+
+	.ui-split-icon {
+		display: grid;
+	}
+
+	.ui-split :global(svg) {
+		display: block;
+		flex-shrink: 0;
+	}
+
+	.ui-split-more svg {
+		transition: transform 0.2s ease;
+	}
+
+	.ui-split-more[aria-expanded='true'] svg {
+		transform: rotate(180deg);
+	}
+
+	.ui-split-menu {
+		position: absolute;
+		top: calc(100% + 0.5rem);
+		left: 0;
+		z-index: 30;
+		box-sizing: border-box;
+		width: var(--ui-split-menu-w, 15rem);
+		max-width: calc(100vw - 2rem);
+		padding: 0.35rem;
+		border: 1px solid var(--ui-menu-border, color-mix(in srgb, var(--ui-menu-fg, CanvasText) 14%, transparent));
+		border-radius: 14px;
+		background: var(--ui-menu-bg, Canvas);
+		color: var(--ui-menu-fg, CanvasText);
+		box-shadow: 0 20px 50px rgb(0 0 0 / 0.25);
+	}
+
+	.ui-split.is-end .ui-split-menu {
+		right: 0;
+		left: auto;
+	}
+
+	.ui-split-menu[hidden] {
+		display: none;
+	}
+
+	.ui-split-menu button,
+	.ui-split-menu a {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		box-sizing: border-box;
+		width: 100%;
+		padding: 0.55rem 0.7rem;
+		border: 0;
+		border-radius: 9px;
+		background: none;
+		color: inherit;
+		font: inherit;
+		font-size: 0.88rem;
+		text-align: left;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	.ui-split-menu button:hover,
+	.ui-split-menu button:focus-visible,
+	.ui-split-menu a:hover,
+	.ui-split-menu a:focus-visible {
+		outline: none;
+		background: color-mix(in srgb, currentColor 8%, transparent);
+	}
+
+	.ui-split-menu button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.ui-split-menu small {
+		color: color-mix(in srgb, currentColor 60%, transparent);
+		font-size: 0.78rem;
+	}
+
+	.ui-split-menu hr {
+		margin: 0.3rem;
+		border: 0;
+		border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ui-split-main,
+		.ui-split-more,
+		.ui-split-more svg {
+			transition: none;
+		}
+	}
+</style>

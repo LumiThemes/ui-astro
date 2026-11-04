@@ -1,0 +1,293 @@
+---
+/**
+ * MobileMenu: a 44px menu button for small screens that opens a panel over
+ * the whole screen under the header — the main links large, each with an
+ * arrow and the current page picked out, an optional call-to-action
+ * button, and smaller secondary links at the foot. The page does not
+ * scroll behind it. A `<details>`, so it opens without script; the script
+ * closes it when a link is followed, on Escape and when the screen grows
+ * past `breakpoint`, where the button hides (hide your wide-screen links
+ * below it yourself). Place it in the header. See
+ * src/runtime/mobile-menu.js.
+ *
+ * @example
+ * <MobileMenu links={[{ label: 'Work', href: '/work' }, { label: 'About', href: '/about' }]} cta={{ label: 'Get in touch', href: '/contact' }} top="64px" />
+ */
+import { isCurrent } from '../runtime/mobile-menu.js';
+
+interface Link {
+	/** The link's text. */
+	label: string;
+	/** Where it goes. */
+	href: string;
+}
+
+interface Cta extends Link {
+	/** An icon before the text: trusted SVG markup, about 18px. */
+	icon?: string;
+}
+
+interface Props {
+	/** The main links, shown large (`{ label, href }`). Required. */
+	links: Link[];
+	/** The current page's path, to pick out its link (`/` matches the home page only; a section matches its pages). Default the page's own path. */
+	current?: string;
+	/** A call-to-action button under the links (`{ label, href, icon }`). Default none. */
+	cta?: Cta;
+	/** Smaller links at the foot of the panel, in two columns (`{ label, href }`). Default none. */
+	more?: Link[];
+	/** The widest screen it shows on, in px; wider screens hide the button and close the menu. 0 shows it at every width. Default 860. */
+	breakpoint?: number;
+	/** Where the panel starts, from the top of the window: the header's height, as a CSS length or `var()`. In a header with `backdrop-filter`, `filter` or `transform`, the panel is placed from the header instead, so pass `100%`. Default `4rem`. */
+	top?: string;
+	/** The button's and the panel's name for screen readers. Default `Menu`. */
+	label?: string;
+	/** Classes for the element. */
+	class?: string;
+}
+
+const { links, current = Astro.url.pathname, cta, more = [], breakpoint = 860, top = '4rem', label = 'Menu', class: className } = Astro.props;
+const uid = `ui-mm-${Math.random().toString(36).slice(2, 8)}`;
+/** The page marker for a link that is the current page. */
+const here = (href: string) => (isCurrent(href, current) ? 'page' : undefined);
+---
+
+<details class:list={['ui-mobile-menu', className]} id={uid} data-ui-mobile-menu data-ui-config={JSON.stringify({ breakpoint })} style={`--ui-mobile-menu-top: ${top}`}>
+	<summary aria-label={label}>
+		<svg class="ui-mobile-menu-open" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+			<path d="M4 8h16M4 16h16"></path>
+		</svg>
+		<svg class="ui-mobile-menu-close" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+			<path d="M18 6 6 18M6 6l12 12"></path>
+		</svg>
+	</summary>
+	<div class="ui-mobile-menu-panel" data-ui-mobile-menu-panel>
+		<nav aria-label={label}>
+			<ul class="ui-mobile-menu-main">
+				{
+					links.map((l) => (
+						<li>
+							<a href={l.href} aria-current={here(l.href)}>
+								{l.label}
+								<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+									<path d="M5 12h14m-6-6 6 6-6 6" />
+								</svg>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+		{
+			cta && (
+				<a class="ui-mobile-menu-cta" href={cta.href} aria-current={here(cta.href)}>
+					{cta.icon && <span aria-hidden="true" set:html={cta.icon} />}
+					{cta.label}
+				</a>
+			)
+		}
+		{
+			more.length > 0 && (
+				<ul class="ui-mobile-menu-more">
+					{more.map((l) => (
+						<li>
+							<a href={l.href} aria-current={here(l.href)}>
+								{l.label}
+							</a>
+						</li>
+					))}
+				</ul>
+			)
+		}
+	</div>
+</details>
+{breakpoint > 0 && <Fragment set:html={`<style>@media (min-width: ${Number(breakpoint) + 1}px) { #${uid} { display: none; } }</style>`} />}
+
+<script>
+	import { mount } from '../runtime/mount.js';
+	import { mobileMenu } from '../runtime/mobile-menu.js';
+
+	mount('[data-ui-mobile-menu]', mobileMenu);
+</script>
+
+<style>
+	.ui-mobile-menu {
+		--ui-mobile-menu-accent-default: var(--ui-accent, #2563eb);
+		display: block;
+	}
+
+	.ui-mobile-menu summary {
+		display: grid;
+		place-items: center;
+		box-sizing: border-box;
+		width: 44px;
+		height: 44px;
+		border: 1px solid var(--ui-mobile-menu-border, color-mix(in srgb, currentColor 16%, transparent));
+		border-radius: var(--ui-mobile-menu-radius, 12px);
+		background: var(--ui-mobile-menu-button-bg, transparent);
+		color: inherit;
+		cursor: pointer;
+		list-style: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.ui-mobile-menu summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.ui-mobile-menu summary:focus-visible {
+		outline: 2px solid var(--ui-mobile-menu-accent, var(--ui-mobile-menu-accent-default));
+		outline-offset: 2px;
+	}
+
+	.ui-mobile-menu summary svg {
+		display: block;
+	}
+
+	.ui-mobile-menu .ui-mobile-menu-close,
+	.ui-mobile-menu[open] .ui-mobile-menu-open {
+		display: none;
+	}
+
+	.ui-mobile-menu[open] .ui-mobile-menu-close {
+		display: block;
+	}
+
+	.ui-mobile-menu[open] summary {
+		border-color: currentColor;
+	}
+
+	/* fixed under the header, down to the foot of the window (the runtime measures; the calc is for before it runs) */
+	.ui-mobile-menu-panel {
+		position: fixed;
+		top: var(--ui-mobile-menu-top, 4rem);
+		right: 0;
+		left: 0;
+		z-index: var(--ui-mobile-menu-z, 50);
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		box-sizing: border-box;
+		height: var(--ui-mobile-menu-h, calc(100dvh - var(--ui-mobile-menu-top, 4rem)));
+		padding: 1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+		overflow-y: auto;
+		background: var(--ui-mobile-menu-bg, Canvas);
+		color: var(--ui-mobile-menu-fg, CanvasText);
+		overscroll-behavior: contain;
+		animation: ui-mobile-menu-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+
+	@keyframes ui-mobile-menu-in {
+		from {
+			opacity: 0;
+			transform: translateY(-8px);
+		}
+	}
+
+	.ui-mobile-menu-main,
+	.ui-mobile-menu-more {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.ui-mobile-menu-main {
+		display: grid;
+	}
+
+	.ui-mobile-menu-main a {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		min-height: 64px;
+		padding: 0.4rem 0.25rem;
+		border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+		color: inherit;
+		font-family: var(--ui-mobile-menu-font, inherit);
+		font-size: var(--ui-mobile-menu-size, 1.9rem);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		text-decoration: none;
+	}
+
+	.ui-mobile-menu-main svg {
+		flex-shrink: 0;
+		color: color-mix(in srgb, currentColor 50%, transparent);
+		transition: transform 0.15s;
+	}
+
+	.ui-mobile-menu-main a[aria-current='page'] {
+		color: var(--ui-mobile-menu-accent, var(--ui-mobile-menu-accent-default));
+	}
+
+	.ui-mobile-menu-main a:hover svg,
+	.ui-mobile-menu-main a:active svg {
+		transform: translateX(4px);
+	}
+
+	.ui-mobile-menu-main a:focus-visible,
+	.ui-mobile-menu-more a:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: -2px;
+	}
+
+	.ui-mobile-menu-cta {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.55rem;
+		min-height: 56px;
+		border-radius: var(--ui-mobile-menu-cta-radius, 999px);
+		background: var(--ui-mobile-menu-accent, var(--ui-mobile-menu-accent-default));
+		color: var(--ui-mobile-menu-accent-ink, var(--ui-accent-ink, #fff));
+		font-size: 1.05rem;
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.ui-mobile-menu-cta span {
+		display: grid;
+	}
+
+	.ui-mobile-menu-cta:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: -5px;
+	}
+
+	.ui-mobile-menu-more {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.15rem 1rem;
+		margin-top: auto;
+	}
+
+	.ui-mobile-menu-more a {
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		color: color-mix(in srgb, currentColor 62%, transparent);
+		font-size: 0.95rem;
+		text-decoration: none;
+	}
+
+	.ui-mobile-menu-more a:hover,
+	.ui-mobile-menu-more a[aria-current='page'] {
+		color: inherit;
+	}
+
+	/* the page does not scroll behind an open menu */
+	:global(:root:has(.ui-mobile-menu[open])) {
+		overflow: hidden;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ui-mobile-menu-panel {
+			animation: none;
+		}
+
+		.ui-mobile-menu-main svg {
+			transition: none;
+		}
+	}
+</style>

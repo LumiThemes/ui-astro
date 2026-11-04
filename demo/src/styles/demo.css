@@ -54,17 +54,17 @@ code {
 	letter-spacing: -0.02em;
 	text-decoration: none;
 }
-.top nav {
+.top > nav {
 	display: flex;
 	align-items: center;
 	gap: 1.5rem;
 	font-size: 0.9rem;
 }
-.top nav a {
+.top > nav > a {
 	color: var(--muted);
 	text-decoration: none;
 }
-.top nav a:hover {
+.top > nav > a:hover {
 	color: #fff;
 }
 .icon {
@@ -292,6 +292,13 @@ main {
 	align-content: start;
 }
 
+/* Press kit */
+.swatches {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 1rem;
+}
+
 /* Footer */
 .foot {
 	padding: 3rem clamp(1rem, 4vw, 3rem) 5rem;
@@ -307,7 +314,7 @@ main {
 }
 
 @media (max-width: 860px) {
-	.top nav a {
+	.top > nav > a {
 		display: none;
 	}
 	.hero,
@@ -321,5 +328,8 @@ main {
 	}
 	.releases {
 		grid-template-columns: 1fr;
+	}
+	.swatches {
+		grid-template-columns: 1fr 1fr;
 	}
 }

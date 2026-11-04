@@ -19,6 +19,23 @@ BackToTop: a round button that floats in once the page has been scrolled a littl
 | `side` | `'left' \| 'right'` | Which corner. Default `right`. |
 | `class` | `string` | Classes for the element. |
 
+## `<CopySwatch>`
+
+CopySwatch: a colour chip for a press kit or a style guide, filled with the colour and showing its name and value; a click copies the value, with a brief "Copied" on the chip (and said to screen readers). The value can be written as hex, `rgb()` or `hsl()` from a hex or `rgb()` colour, and the text on the chip picks near-black or white to read on it. Sits in any grid; it fills its cell. See src/runtime/copy-swatch.js.
+
+```astro
+<CopySwatch color="#D4FF3A" name="Yellow" />
+```
+
+| Prop | Type | |
+|---|---|---|
+| `color` (required) | `string` | The colour, as CSS (`#D4FF3A`, `rgb(…)`, anything CSS reads). Required. |
+| `name` | `string` | Its name, shown large. Default none. |
+| `value` | `string` | The value shown and copied. Default the colour, written in `format`. |
+| `format` | `'hex' \| 'rgb' \| 'hsl'` | Write the colour as `hex`, `rgb` or `hsl` (works from a hex or `rgb()` colour). Default as given. |
+| `ink` | `string` | The text colour on the chip. Default near-black or white, whichever reads better (near-black for a colour it cannot read). |
+| `class` | `string` | Classes for the element. |
+
 ## `<Countdown>`
 
 Countdown: days, hours, minutes and seconds to a date, as tiles, that swap to a message when the date passes. A drop, a sale's end, a launch. Rendered with the right numbers at build time and kept ticking in the browser (src/runtime/countdown.js). With reduced motion, the end date instead of a number that changes every second.
@@ -92,6 +109,43 @@ Faq: questions that open to their answers — borderless rows with a drawn chevr
 | `jsonLd` | `boolean` | Also publish them as FAQPage JSON-LD. Default true (turn it off if the page already has one). |
 | `exclusive` | `boolean` | Only one open at a time. Default false. |
 | `openFirst` | `boolean` | The first one starts open. Default false. |
+| `class` | `string` | Classes for the element. |
+
+## `<InstallCommand>`
+
+InstallCommand: one copyable command bar whose button opens a menu of ways to get the thing — a package manager, a CLI, a prompt to hand an agent — grouped under titles. Choosing one swaps the bar's label and icon, the command shown, what the copy button copies and the note under the bar; plain links (downloads, a page with every way) can sit at the foot of the menu. Arrow keys, Home and End move through the menu, Escape and a click outside close it, and a copy shows a tick for a moment. See src/runtime/install-command.js.
+
+```astro
+<InstallCommand groups={[{ title: 'Install', options: [{ label: 'npm', prefix: '$ ', command: 'npm i my-lib' }, { label: 'pnpm', prefix: '$ ', command: 'pnpm add my-lib' }] }]} />
+```
+
+| Prop | Type | |
+|---|---|---|
+| `groups` (required) | `Group[]` | The options, in titled groups (`{ title, options: [{ id, label, icon, prefix, command, copy, note, tag }] }`). The first option shows at first. Required. |
+| `links` | `Link[]` | Plain links at the foot of the menu (`{ label, href, icon, tag, download }`). Default none. |
+| `linksTitle` | `string` | The heading over the links. Default `Download`; empty for none. |
+| `selected` | `string` | The option to show at first, by id. Default the first. |
+| `align` | `'start' \| 'center'` | Line the bar and its note up at the start or the centre. Default `start`. |
+| `copyLabel` | `string` | The copy button's name for screen readers. Default `Copy the command`. |
+| `class` | `string` | Classes for the element. |
+
+## `<MobileMenu>`
+
+MobileMenu: a 44px menu button for small screens that opens a panel over the whole screen under the header — the main links large, each with an arrow and the current page picked out, an optional call-to-action button, and smaller secondary links at the foot. The page does not scroll behind it. A `<details>`, so it opens without script; the script closes it when a link is followed, on Escape and when the screen grows past `breakpoint`, where the button hides (hide your wide-screen links below it yourself). Place it in the header. See src/runtime/mobile-menu.js.
+
+```astro
+<MobileMenu links={[{ label: 'Work', href: '/work' }, { label: 'About', href: '/about' }]} cta={{ label: 'Get in touch', href: '/contact' }} top="64px" />
+```
+
+| Prop | Type | |
+|---|---|---|
+| `links` (required) | `Link[]` | The main links, shown large (`{ label, href }`). Required. |
+| `current` | `string` | The current page's path, to pick out its link (`/` matches the home page only; a section matches its pages). Default the page's own path. |
+| `cta` | `Cta` | A call-to-action button under the links (`{ label, href, icon }`). Default none. |
+| `more` | `Link[]` | Smaller links at the foot of the panel, in two columns (`{ label, href }`). Default none. |
+| `breakpoint` | `number` | The widest screen it shows on, in px; wider screens hide the button and close the menu. 0 shows it at every width. Default 860. |
+| `top` | `string` | Where the panel starts, from the top of the window: the header's height, as a CSS length or `var()`. In a header with `backdrop-filter`, `filter` or `transform`, the panel is placed from the header instead, so pass `100%`. Default `4rem`. |
+| `label` | `string` | The button's and the panel's name for screen readers. Default `Menu`. |
 | `class` | `string` | Classes for the element. |
 
 ## `<NoticeBar>`
@@ -169,6 +223,27 @@ Skeleton: a loading placeholder with a shimmer passing over it, the shape of wha
 | `variant` | `'card' \| 'row' \| 'text'` | The shape. Default `text`. |
 | `lines` | `number` | Lines, for `text`. Default 3. |
 | `label` | `string` | A label for screen readers. Default `Loading`. |
+| `class` | `string` | Classes for the element. |
+
+## `<SplitButton>`
+
+SplitButton: a main action with an arrow attached that opens a menu of further ones — Download SVG, and PNG sizes and a kit behind the arrow. The main action and each menu item are a link (`href`) or a button; a button sends a `ui-action` event from the root with its `action` in `detail.action`. Items can carry a small note at the end and be split by dividers. The arrow turns while the menu is open; arrow keys, Home and End move through it, Escape and a click outside close it. See src/runtime/split-button.js.
+
+```astro
+<SplitButton label="Download SVG" href="/logo.svg" download items={[{ label: 'PNG', note: '512 px', action: 'png-512' }, { divider: true }, { label: 'Favicon kit', note: '.zip', href: '/favicon.zip', download: true }]} />
+```
+
+| Prop | Type | |
+|---|---|---|
+| `label` (required) | `string` | The main action's text. Required. |
+| `href` | `string` | Makes the main action a link to here; without one it is a button. Default none. |
+| `download` | `boolean \| string` | For a linked main action: download it (`true`, or the file name). Default false. |
+| `newTab` | `boolean` | For a linked main action: open in a new tab. Default false. |
+| `action` | `string` | For a main action that is a button: what its `ui-action` event carries. Default `main`. |
+| `icon` | `string` | An icon before the main action's text: trusted SVG markup, about 16px. Default none. |
+| `items` (required) | `Item[]` | The menu (`{ label, note, href, download, newTab, action, disabled }`, or `{ divider: true }`). Required. |
+| `menuLabel` | `string` | The arrow's and the menu's name for screen readers. Default `More options`. |
+| `align` | `'start' \| 'end'` | Which edge the menu lines up with. Default `start`. |
 | `class` | `string` | Classes for the element. |
 
 ## `<Timeline>`

@@ -1,6 +1,6 @@
 # @arraypress/ui-astro
 
-Small UI pieces for Astro sites, as components: a countdown to a drop, loading skeletons, a range slider that writes its value the reader's way, a file dropzone, a timeline that fills as you scroll, tooltips from an attribute, page chrome, and the record sleeve and level meter a music shop wants. Plain CSS and a few lines of script, with no dependencies.
+Small UI pieces for Astro sites, as components: a countdown to a drop, loading skeletons, a range slider that writes its value the reader's way, a file dropzone, a timeline that fills as you scroll, tooltips from an attribute, an announcement bar, an FAQ, a mobile menu, a split button, a copyable install command, colour swatches, page chrome, and the record sleeve and level meter a music shop wants. Plain CSS and a few lines of script, with no dependencies.
 
 ```astro
 ---
@@ -46,6 +46,17 @@ Astro 6 or 7. The runtime underneath (`@arraypress/ui-astro`) works without Astr
 | `<ScrollProgress>` | A reading-progress bar along the top or bottom of the window | JS |
 | `<BackToTop>` | A button that floats in once you have scrolled, and hides near the footer | JS |
 
+**Navigation and actions**
+
+| Component | | Drawn with |
+|---|---|---|
+| `<NoticeBar>` | An announcement bar across the top, remembered when closed | CSS + JS |
+| `<MobileMenu>` | A menu button that opens a full-screen panel of large links under the header | CSS + JS |
+| `<SplitButton>` | A main action with an arrow that opens a menu of further ones | CSS + JS |
+| `<InstallCommand>` | A copyable command bar with a menu of ways to install | CSS + JS |
+| `<Faq>` | Questions that open to their answers, with FAQPage structured data | CSS |
+| `<CopySwatch>` | A colour chip that copies its value | CSS + JS |
+
 **For music shops**
 
 | Component | | Drawn with |
@@ -71,6 +82,11 @@ The package's main entry is the runtime the components are built on, for use wit
 | `dropzone(el)`, `accepts(file, accept)` | A drop target for a file input, and whether a file matches an `accept` list |
 | `timeline(el)` | Fills a timeline as the page scrolls |
 | `scrollChrome()` | The one scroll listener behind `<ScrollProgress>` and `<BackToTop>` |
+| `noticeBar(el, config)`, `noticeEnded` | An announcement bar's closing and end date |
+| `installCommand(el)`, `splitButton(el)`, `mobileMenu(el, config)`, `copySwatch(el)` | The scripts behind those components; `isCurrent(href, path)` picks out the current page's link |
+| `popupMenu(root, trigger, menu)`, `menuStep` | A drop-down menu wired to its button: keys, Escape, click outside |
+| `copyText(text)`, `flash(el)` | Copy to the clipboard (with a fallback), and a class on for a moment |
+| `parseColor`, `formatColor(color, format)`, `inkFor(color)` | Read a hex or `rgb()` colour, write it as hex, `rgb()` or `hsl()`, and pick the ink that reads on it |
 | `prefersReducedMotion()` | The reduced-motion check every piece makes |
 | `mount(selector, setup)`, `readConfig` | Start a script on every matching element, now and after each view transition |
 

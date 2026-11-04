@@ -1,0 +1,144 @@
+---
+/**
+ * CopySwatch: a colour chip for a press kit or a style guide, filled with
+ * the colour and showing its name and value; a click copies the value,
+ * with a brief "Copied" on the chip (and said to screen readers). The
+ * value can be written as hex, `rgb()` or `hsl()` from a hex or `rgb()`
+ * colour, and the text on the chip picks near-black or white to read on
+ * it. Sits in any grid; it fills its cell. See src/runtime/copy-swatch.js.
+ *
+ * @example
+ * <CopySwatch color="#D4FF3A" name="Yellow" />
+ */
+import { formatColor, inkFor } from '../runtime/color.js';
+
+interface Props {
+	/** The colour, as CSS (`#D4FF3A`, `rgb(…)`, anything CSS reads). Required. */
+	color: string;
+	/** Its name, shown large. Default none. */
+	name?: string;
+	/** The value shown and copied. Default the colour, written in `format`. */
+	value?: string;
+	/** Write the colour as `hex`, `rgb` or `hsl` (works from a hex or `rgb()` colour). Default as given. */
+	format?: 'hex' | 'rgb' | 'hsl';
+	/** The text colour on the chip. Default near-black or white, whichever reads better (near-black for a colour it cannot read). */
+	ink?: string;
+	/** Classes for the element. */
+	class?: string;
+}
+
+const { color, name, value, format, ink, class: className } = Astro.props;
+const shown = value ?? formatColor(color, format);
+const text = ink ?? inkFor(color) ?? '#0b0b0b';
+---
+
+<div class:list={['ui-swatch', className]} data-ui-copy-swatch style={`--ui-swatch-color: ${color}; --ui-swatch-ink: ${text}`}>
+	<button type="button" class="ui-swatch-chip" data-value={shown} title={`Copy ${shown}`}>
+		{name && <strong>{name}</strong>}
+		<span class="ui-swatch-value">{shown}</span>
+		<em class="ui-swatch-copied" aria-hidden="true">Copied</em>
+	</button>
+	<span class="ui-swatch-sr" role="status"></span>
+</div>
+
+<script>
+	import { mount } from '../runtime/mount.js';
+	import { copySwatch } from '../runtime/copy-swatch.js';
+
+	mount('[data-ui-copy-swatch]', copySwatch);
+</script>
+
+<style>
+	.ui-swatch {
+		position: relative;
+		display: grid;
+		min-width: 0;
+	}
+
+	.ui-swatch-chip {
+		position: relative;
+		display: grid;
+		align-content: end;
+		gap: 0.2rem;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: var(--ui-swatch-h, 8rem);
+		padding: var(--ui-swatch-pad, 1.4rem);
+		border: 1px solid color-mix(in srgb, var(--ui-swatch-ink) 14%, transparent);
+		border-radius: var(--ui-swatch-radius, 18px);
+		background: var(--ui-swatch-color);
+		color: var(--ui-swatch-ink);
+		font: inherit;
+		text-align: left;
+		cursor: copy;
+		transition: transform 0.15s ease;
+	}
+
+	.ui-swatch-chip:hover {
+		transform: translateY(-2px);
+	}
+
+	.ui-swatch-chip:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: -6px;
+	}
+
+	.ui-swatch-chip strong {
+		font-size: 1.05rem;
+	}
+
+	.ui-swatch-value {
+		font-family: var(--ui-swatch-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+		font-size: 0.85rem;
+		opacity: 0.75;
+		overflow-wrap: anywhere;
+	}
+
+	/* the note in the chip's own colour, on a pill of its ink */
+	.ui-swatch-copied {
+		position: absolute;
+		top: 0.9rem;
+		right: 0.9rem;
+		padding: 0.2rem 0.55rem;
+		border-radius: 999px;
+		background: var(--ui-swatch-ink);
+		color: var(--ui-swatch-color);
+		font-size: 0.7rem;
+		font-style: normal;
+		font-weight: 700;
+		opacity: 0;
+		transform: translateY(4px);
+		transition:
+			opacity 0.18s,
+			transform 0.18s;
+	}
+
+	.ui-swatch-chip.is-copied .ui-swatch-copied {
+		opacity: 1;
+		transform: none;
+	}
+
+	.ui-swatch-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ui-swatch-chip,
+		.ui-swatch-copied {
+			transition: none;
+		}
+
+		.ui-swatch-chip:hover {
+			transform: none;
+		}
+
+		.ui-swatch-copied {
+			transform: none;
+		}
+	}
+</style>
