@@ -4,6 +4,8 @@ import BackToTop from '@arraypress/ui-astro/BackToTop.astro';
 import Countdown from '@arraypress/ui-astro/Countdown.astro';
 import Dropzone from '@arraypress/ui-astro/Dropzone.astro';
 import Equalizer from '@arraypress/ui-astro/Equalizer.astro';
+import Faq from '@arraypress/ui-astro/Faq.astro';
+import NoticeBar from '@arraypress/ui-astro/NoticeBar.astro';
 import Range from '@arraypress/ui-astro/Range.astro';
 import ScrollProgress from '@arraypress/ui-astro/ScrollProgress.astro';
 import Skeleton from '@arraypress/ui-astro/Skeleton.astro';
@@ -31,6 +33,7 @@ const tips: Record<string, string> = {
 		<title>ui-astro · Tidewater Records</title>
 	</head>
 	<body>
+		<NoticeBar id="drop-07" label="Out now" text="Low Tide is out: Mara Quill’s Drop 07" more="Eight tracks, 24-bit, with stems" cta="Listen" href="#releases" />
 		<ScrollProgress color="#a3e635" />
 
 		<header class="top">
@@ -180,6 +183,22 @@ const tips: Record<string, string> = {
 						{ date: '2021', title: 'Pressing plant', text: 'Our own short-run vinyl, a hundred copies at a time.' },
 						{ date: 'Now', title: 'Drop 07', text: 'Mara Quill’s Low Tide, out on the seventh of December.' },
 						{ date: 'Next', title: 'A label night', text: 'Every artist on one bill, spring 2027.' },
+					]}
+				/>
+			</section>
+
+			<section id="questions" class="block split">
+				<header>
+					<p class="piece">&lt;Faq&gt;</p>
+					<h2>Questions</h2>
+					<p>One open at a time, and the same questions as FAQPage structured data.</p>
+				</header>
+				<Faq
+					exclusive
+					items={[
+						{ q: 'What format are the downloads?', a: 'Lossless 24-bit WAV, as the masters left the studio, plus stems where the release has them.' },
+						{ q: 'Can I use a track in my video?', a: 'Yes, with a licence: see <a href="#licence">Licences</a> for the tiers.' },
+						{ q: 'Do you ship vinyl abroad?', a: 'Everywhere, from Leeds. Postage is worked out at checkout.' },
 					]}
 				/>
 			</section>

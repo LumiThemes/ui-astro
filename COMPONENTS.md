@@ -78,6 +78,44 @@ Equalizer: a few bars that rise into place with an overshoot, one after another,
 | `label` | `string` | A label for screen readers; without one it is decoration. |
 | `class` | `string` | Classes for the element. |
 
+## `<Faq>`
+
+Faq: questions that open to their answers — borderless rows with a drawn chevron that turns — and, by default, the same questions as FAQPage structured data for search engines. With `exclusive`, opening one closes the others (the native `<details name>`, no script). Answers are trusted HTML (links and emphasis); the structured data gets their plain text.
+
+```astro
+<Faq items={[{ q: 'Is it free?', a: 'Yes — see the <a href="/licence">licence</a>.' }]} />
+```
+
+| Prop | Type | |
+|---|---|---|
+| `items` (required) | `Item[]` | The questions and answers. Required. |
+| `jsonLd` | `boolean` | Also publish them as FAQPage JSON-LD. Default true (turn it off if the page already has one). |
+| `exclusive` | `boolean` | Only one open at a time. Default false. |
+| `openFirst` | `boolean` | The first one starts open. Default false. |
+| `class` | `string` | Classes for the element. |
+
+## `<NoticeBar>`
+
+NoticeBar: a slim announcement bar across the top of the page — a launch, a sale, a new release — with an optional pill, a line, a longer line for wide screens, a call to action and a close button. A close is remembered per `id` (change the id to show a new notice to people who closed the last); `until` hides it after a day. While it shows, `--ui-notice-h` on the page's root holds its height, for sticky headers to sit under. A closed bar is hidden before the page paints, so it never flashes. See src/runtime/notice-bar.js.
+
+```astro
+<NoticeBar id="launch-2026" label="Live" text="We just launched on Product Hunt" cta="Upvote" href="https://www.producthunt.com/…" />
+```
+
+| Prop | Type | |
+|---|---|---|
+| `id` (required) | `string` | Names this notice; a close is remembered per id. Required. |
+| `text` (required) | `string` | The main line. Required. |
+| `href` | `string` | Where it links; without one the bar is plain text. |
+| `label` | `string` | A small pill at the start (`Live`, `New`…). Default none. |
+| `more` | `string` | A second line, shown on wide screens only. Default none. |
+| `cta` | `string` | The call to action, as a button-like pill at the end. Default none. |
+| `newTab` | `boolean` | Open the link in a new tab. Default false. |
+| `until` | `string` | The last day it shows (`YYYY-MM-DD`, inclusive). Default no end. |
+| `dismissible` | `boolean` | Show a close button. Default true. |
+| `tone` | `'accent' \| 'dark'` | The colours: `accent` (a bright fill, set `--ui-notice-bg` and `--ui-notice-fg`) or `dark`. Default `accent`. |
+| `class` | `string` | Classes for the element. |
+
 ## `<Range>`
 
 Range: a slider with its label and its value, the track filled up to the thumb and the thumb swelling as it is held. For calculators and filters: pair it with `<CountUp>` (from `@arraypress/effects-astro`) to show a result that glides as it moves. It is a real `<input type="range">` (keyboard, forms, `input` events); the value is written the reader's way. See src/runtime/range.js.

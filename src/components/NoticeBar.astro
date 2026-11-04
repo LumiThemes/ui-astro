@@ -1,0 +1,239 @@
+---
+/**
+ * NoticeBar: a slim announcement bar across the top of the page — a launch,
+ * a sale, a new release — with an optional pill, a line, a longer line for
+ * wide screens, a call to action and a close button. A close is remembered
+ * per `id` (change the id to show a new notice to people who closed the
+ * last); `until` hides it after a day. While it shows, `--ui-notice-h` on
+ * the page's root holds its height, for sticky headers to sit under. A
+ * closed bar is hidden before the page paints, so it never flashes. See
+ * src/runtime/notice-bar.js.
+ *
+ * @example
+ * <NoticeBar id="launch-2026" label="Live" text="We just launched on Product Hunt" cta="Upvote" href="https://www.producthunt.com/…" />
+ */
+
+interface Props {
+	/** Names this notice; a close is remembered per id. Required. */
+	id: string;
+	/** The main line. Required. */
+	text: string;
+	/** Where it links; without one the bar is plain text. */
+	href?: string;
+	/** A small pill at the start (`Live`, `New`…). Default none. */
+	label?: string;
+	/** A second line, shown on wide screens only. Default none. */
+	more?: string;
+	/** The call to action, as a button-like pill at the end. Default none. */
+	cta?: string;
+	/** Open the link in a new tab. Default false. */
+	newTab?: boolean;
+	/** The last day it shows (`YYYY-MM-DD`, inclusive). Default no end. */
+	until?: string;
+	/** Show a close button. Default true. */
+	dismissible?: boolean;
+	/** The colours: `accent` (a bright fill, set `--ui-notice-bg` and `--ui-notice-fg`) or `dark`. Default `accent`. */
+	tone?: 'accent' | 'dark';
+	/** Classes for the element. */
+	class?: string;
+}
+
+const { id, text, href, label, more, cta, newTab = false, until, dismissible = true, tone = 'accent', class: className } = Astro.props;
+const ended = until ? Date.now() >= Date.parse(`${until}T00:00:00Z`) + 86_400_000 : false;
+const Tag = href ? 'a' : 'div';
+const linkAttrs = href ? { href, ...(newTab ? { target: '_blank', rel: 'noopener' } : {}) } : {};
+---
+
+{
+	!ended && (
+		<div class:list={['ui-notice', `is-${tone}`, className]} data-ui-notice-bar data-ui-config={JSON.stringify({ id, until })} role="region" aria-label="Announcement">
+			<Tag class="ui-notice-link" {...linkAttrs}>
+				{label && (
+					<span class="ui-notice-label">
+						<i aria-hidden="true" />
+						{label}
+					</span>
+				)}
+				<strong>{text}</strong>
+				{more && <span class="ui-notice-more">{more}</span>}
+				{cta && (
+					<span class="ui-notice-cta">
+						{cta}
+						{href && (
+							<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M7 17 17 7M8 7h9v9" />
+							</svg>
+						)}
+					</span>
+				)}
+			</Tag>
+			{dismissible && (
+				<button type="button" class="ui-notice-close" data-ui-notice-close aria-label="Close the announcement">
+					<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+						<path d="M18 6 6 18M6 6l12 12" />
+					</svg>
+				</button>
+			)}
+		</div>
+	)
+}
+{
+	/* hide a closed notice before the page paints (the runtime does the rest) */
+	!ended && dismissible && (
+		<script is:inline define:vars={{ key: `ui-notice:${id}` }}>
+			try {
+				if (localStorage.getItem(key) === '1') {
+					var bars = document.querySelectorAll('[data-ui-notice-bar]');
+					bars[bars.length - 1].hidden = true;
+				}
+			} catch (e) {}
+		</script>
+	)
+}
+
+<script>
+	import { mount } from '../runtime/mount.js';
+	import { noticeBar } from '../runtime/notice-bar.js';
+
+	mount('[data-ui-notice-bar]', noticeBar);
+</script>
+
+<style>
+	.ui-notice {
+		--ui-notice-bg: #d4ff3a;
+		--ui-notice-fg: #0b0b0b;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 38px;
+		padding: 0.35rem 3rem;
+		background: var(--ui-notice-bg);
+		color: var(--ui-notice-fg);
+		font-size: 0.84rem;
+	}
+
+	.ui-notice.is-dark {
+		--ui-notice-bg: #0b0b0b;
+		--ui-notice-fg: #fff;
+	}
+
+	.ui-notice[hidden] {
+		display: none;
+	}
+
+	.ui-notice-link {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		min-width: 0;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.ui-notice-link strong {
+		overflow: hidden;
+		font-weight: 700;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.ui-notice-label {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.15rem 0.55rem;
+		border-radius: 999px;
+		background: var(--ui-notice-fg);
+		color: var(--ui-notice-bg);
+		font-size: 0.66rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.ui-notice-label i {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: currentColor;
+		animation: ui-notice-pulse 1.6s ease-in-out infinite;
+	}
+
+	@keyframes ui-notice-pulse {
+		50% {
+			opacity: 0.25;
+		}
+	}
+
+	.ui-notice-more {
+		overflow: hidden;
+		opacity: 0.7;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.ui-notice-cta {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		gap: 0.2rem;
+		padding: 0.2rem 0.65rem;
+		border: 1.5px solid currentColor;
+		border-radius: 999px;
+		font-weight: 700;
+		transition:
+			background 0.15s,
+			color 0.15s;
+	}
+
+	a.ui-notice-link:hover .ui-notice-cta {
+		background: var(--ui-notice-fg);
+		color: var(--ui-notice-bg);
+	}
+
+	.ui-notice-close {
+		position: absolute;
+		top: 50%;
+		right: 0.75rem;
+		display: grid;
+		place-items: center;
+		width: 26px;
+		height: 26px;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		background: none;
+		color: inherit;
+		cursor: pointer;
+		transform: translateY(-50%);
+	}
+
+	.ui-notice-close:hover {
+		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+
+	@media (max-width: 900px) {
+		.ui-notice-more {
+			display: none;
+		}
+	}
+
+	@media (max-width: 520px) {
+		.ui-notice {
+			padding: 0.35rem 2.6rem 0.35rem 0.75rem;
+			font-size: 0.78rem;
+		}
+
+		.ui-notice-label {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ui-notice-label i {
+			animation: none;
+		}
+	}
+</style>

@@ -17,6 +17,8 @@ Pick by what is asked for:
 | A story, roadmap or process | `<Timeline>` |
 | Tooltips | `tooltip.css` and `data-tip` (repeat the words in `aria-label`) |
 | Page chrome | `<ScrollProgress>`, `<BackToTop>`, once in the layout |
+| An announcement across the top (a launch, a sale) | `<NoticeBar>` (change its `id` to show a new one to people who closed the last) |
+| Questions and answers | `<Faq>` (FAQPage JSON-LD comes with it; `jsonLd={false}` if the page has its own) |
 | A music or digital-goods shop | `<VinylSleeve>`, `<Equalizer>` (set `.is-playing` from your player) |
 
 Things that trip people up:

@@ -1,0 +1,118 @@
+---
+/**
+ * Faq: questions that open to their answers — borderless rows with a drawn
+ * chevron that turns — and, by default, the same questions as FAQPage
+ * structured data for search engines. With `exclusive`, opening one closes
+ * the others (the native `<details name>`, no script). Answers are trusted
+ * HTML (links and emphasis); the structured data gets their plain text.
+ *
+ * @example
+ * <Faq items={[{ q: 'Is it free?', a: 'Yes — see the <a href="/licence">licence</a>.' }]} />
+ */
+
+interface Item {
+	/** The question. */
+	q: string;
+	/** The answer: trusted HTML. */
+	a: string;
+}
+
+interface Props {
+	/** The questions and answers. Required. */
+	items: Item[];
+	/** Also publish them as FAQPage JSON-LD. Default true (turn it off if the page already has one). */
+	jsonLd?: boolean;
+	/** Only one open at a time. Default false. */
+	exclusive?: boolean;
+	/** The first one starts open. Default false. */
+	openFirst?: boolean;
+	/** Classes for the element. */
+	class?: string;
+}
+
+const { items, jsonLd = true, exclusive = false, openFirst = false, class: className } = Astro.props;
+const group = exclusive ? `ui-faq-${Math.random().toString(36).slice(2, 8)}` : undefined;
+/** An answer's text without its tags, for the structured data. */
+const plain = (html: string) =>
+	html
+		.replace(/<[^>]+>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/&amp;/g, '&')
+		.replace(/\s+/g, ' ')
+		.trim();
+const data = {
+	'@context': 'https://schema.org',
+	'@type': 'FAQPage',
+	mainEntity: items.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: plain(f.a) } })),
+};
+---
+
+<div class:list={['ui-faq', className]}>
+	{
+		items.map((f, i) => (
+			<details name={group} open={openFirst && i === 0}>
+				<summary>{f.q}</summary>
+				<div class="ui-faq-answer" set:html={f.a} />
+			</details>
+		))
+	}
+</div>
+{jsonLd && <script type="application/ld+json" set:html={JSON.stringify(data)} />}
+
+<style>
+	.ui-faq {
+		border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+	}
+
+	.ui-faq details {
+		border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+	}
+
+	.ui-faq summary {
+		position: relative;
+		padding: 1.15rem 2.5rem 1.15rem 0;
+		font-weight: 600;
+		list-style: none;
+		cursor: pointer;
+	}
+
+	.ui-faq summary::-webkit-details-marker {
+		display: none;
+	}
+
+	/* a drawn chevron that turns when the answer opens */
+	.ui-faq summary::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		right: 0.35rem;
+		width: 8px;
+		height: 8px;
+		border-right: 1.75px solid color-mix(in srgb, currentColor 55%, transparent);
+		border-bottom: 1.75px solid color-mix(in srgb, currentColor 55%, transparent);
+		transform: translateY(-70%) rotate(45deg);
+		transition: transform 0.2s ease;
+	}
+
+	.ui-faq details[open] summary::after {
+		transform: translateY(-30%) rotate(-135deg);
+	}
+
+	.ui-faq summary:focus-visible {
+		outline: none;
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.ui-faq-answer {
+		padding: 0 2.5rem 1.2rem 0;
+		opacity: 0.72;
+		line-height: 1.6;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ui-faq summary::after {
+			transition: none;
+		}
+	}
+</style>

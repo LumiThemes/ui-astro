@@ -5,5 +5,6 @@ export type { NumberStyle } from './runtime/number-format.js';
 export { dropzone, accepts } from './runtime/dropzone.js';
 export { timeline } from './runtime/timeline.js';
 export { scrollChrome } from './runtime/scroll-chrome.js';
+export { noticeBar, noticeEnded } from './runtime/notice-bar.js';
 export { prefersReducedMotion } from './runtime/device.js';
 export { mount, readConfig } from './runtime/mount.js';

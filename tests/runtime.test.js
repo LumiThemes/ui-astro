@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readConfig } from '../src/runtime/mount.js';
 import { prefersReducedMotion } from '../src/runtime/device.js';
 import { countdown } from '../src/runtime/countdown.js';
+import { noticeEnded } from '../src/runtime/notice-bar.js';
 
 /** Stands in for the browser's HTMLElement, which the runtime checks its parts against. */
 class FakeElement {
@@ -84,4 +85,13 @@ test('countdown writes the time left, and its message once the target has passed
 		delete (/** @type {any} */ (globalThis).window);
 		delete (/** @type {any} */ (globalThis).HTMLElement);
 	}
+});
+
+test('noticeEnded: a notice shows through its last day, then ends', () => {
+	const day = (d) => Date.parse(`${d}T00:00:00Z`);
+	assert.equal(noticeEnded(undefined), false);
+	assert.equal(noticeEnded('', day('2030-01-01')), false);
+	assert.equal(noticeEnded('2026-11-30', day('2026-11-30') + 3_600_000), false);
+	assert.equal(noticeEnded('2026-11-30', day('2026-12-01')), true);
+	assert.equal(noticeEnded('not a date', day('2026-12-01')), false);
 });
