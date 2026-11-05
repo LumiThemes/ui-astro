@@ -19,3 +19,18 @@ test('numberFormat writes numbers in the given style', () => {
 	assert.equal(numberFormat({ locale: 'en-GB', currency: 'GBP', compact: true })(2400000), '£2.4m');
 	assert.equal(numberFormat({ locale: 'de-DE', decimals: 2 })(99.5), '99,50');
 });
+
+test('stableId is the same on every build: a hash of what it shows, counted per page', async () => {
+	const { stableId, shortHash } = await import('../src/components/uid.js');
+	assert.equal(shortHash('npm i my-lib'), shortHash('npm i my-lib'));
+	assert.notEqual(shortHash('npm i my-lib'), shortHash('pnpm add my-lib'));
+	assert.match(shortHash(''), /^[a-z\d]{1,7}$/);
+	const page = {};
+	const groups = [{ options: [{ label: 'npm', command: 'npm i my-lib' }] }];
+	const first = stableId('ui-install', page, groups);
+	assert.equal(first, `ui-install-${shortHash(JSON.stringify(groups))}`);
+	assert.equal(stableId('ui-install', page, groups), `${first}-2`, 'a second alike on the page');
+	assert.notEqual(stableId('ui-install', page, [{ options: [] }]), first, 'different options, a different id');
+	assert.equal(stableId('ui-install', {}, groups), first, 'a new page counts afresh');
+	assert.equal(stableId('ui-faq', {}, undefined), `ui-faq-${shortHash('')}`);
+});

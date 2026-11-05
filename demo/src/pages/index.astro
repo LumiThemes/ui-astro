@@ -164,7 +164,7 @@ const tips: Record<string, string> = {
 				<header>
 					<p class="piece">&lt;SplitButton&gt; · &lt;InstallCommand&gt;</p>
 					<h2>Buy it, or pull the stems</h2>
-					<p>The arrow opens other formats; buttons in it send a <code>ui-action</code> event. The bar's menu switches how to fetch the stems, and copies the command.</p>
+					<p>The arrow opens other formats; buttons in it send a <code>ui-action</code> event. The bar's menu switches how to fetch the stems, and copies the command; its colours come from <code>--ui-install-*</code> and <code>--ui-menu-*</code> properties.</p>
 				</header>
 				<div class="stack">
 					<SplitButton
@@ -201,6 +201,8 @@ const tips: Record<string, string> = {
 							{ label: 'Stems', href: '#stems', tag: '.zip', download: true },
 							{ label: 'Artwork', href: '/covers/low-tide.svg', tag: '.svg', download: true },
 						]}
+						more={{ label: 'Every way to get the stems', href: '#stems' }}
+						class="demo-install"
 					/>
 				</div>
 			</section>

@@ -113,7 +113,7 @@ Faq: questions that open to their answers — borderless rows with a drawn chevr
 
 ## `<InstallCommand>`
 
-InstallCommand: one copyable command bar whose button opens a menu of ways to get the thing — a package manager, a CLI, a prompt to hand an agent — grouped under titles. Choosing one swaps the bar's label and icon, the command shown, what the copy button copies and the note under the bar; plain links (downloads, a page with every way) can sit at the foot of the menu. Arrow keys, Home and End move through the menu, Escape and a click outside close it, and a copy shows a tick for a moment. See src/runtime/install-command.js.
+InstallCommand: one copyable command bar whose button opens a menu of ways to get the thing — a package manager, a CLI, a prompt to hand an agent — grouped under titles. Choosing one swaps the bar's label and icon, the command shown, what the copy button copies and the note under the bar; plain links (downloads) can sit at the foot of the menu, and one more (a page with every way) set apart under them with its icon after the words. Arrow keys, Home and End move through the menu, Escape and a click outside close it, and a copy shows a tick for a moment. See src/runtime/install-command.js.
 
 ```astro
 <InstallCommand groups={[{ title: 'Install', options: [{ label: 'npm', prefix: '$ ', command: 'npm i my-lib' }, { label: 'pnpm', prefix: '$ ', command: 'pnpm add my-lib' }] }]} />
@@ -124,6 +124,9 @@ InstallCommand: one copyable command bar whose button opens a menu of ways to ge
 | `groups` (required) | `Group[]` | The options, in titled groups (`{ title, options: [{ id, label, icon, prefix, command, copy, note, tag }] }`). The first option shows at first. Required. |
 | `links` | `Link[]` | Plain links at the foot of the menu (`{ label, href, icon, tag, download }`). Default none. |
 | `linksTitle` | `string` | The heading over the links. Default `Download`; empty for none. |
+| `more` | `MoreLink` | One more link at the very foot of the menu, under a rule of its own, its icon after the words (`{ label, href, icon }`): a page with every way to install. Default none. |
+| `icons` | `Icons` | The component's own icons as trusted SVG markup (`{ chevron, copy, check, download, arrow }`), to draw them as the site draws its icons. Default simple 2px line icons. |
+| `id` | `string` | A base for its element ids. Default a hash of its options, the same on every build. |
 | `selected` | `string` | The option to show at first, by id. Default the first. |
 | `align` | `'start' \| 'center'` | Line the bar and its note up at the start or the centre. Default `start`. |
 | `copyLabel` | `string` | The copy button's name for screen readers. Default `Copy the command`. |

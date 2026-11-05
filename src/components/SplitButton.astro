@@ -12,6 +12,7 @@
  * @example
  * <SplitButton label="Download SVG" href="/logo.svg" download items={[{ label: 'PNG', note: '512 px', action: 'png-512' }, { divider: true }, { label: 'Favicon kit', note: '.zip', href: '/favicon.zip', download: true }]} />
  */
+import { stableId } from './uid.js';
 
 interface Item {
 	/** Its text. */
@@ -56,7 +57,7 @@ interface Props {
 }
 
 const { label, href, download = false, newTab = false, action = 'main', icon, items, menuLabel = 'More options', align = 'start', class: className } = Astro.props;
-const uid = `ui-split-${Math.random().toString(36).slice(2, 8)}`;
+const uid = stableId('ui-split', Astro.request, { label, href, action, items });
 /** A link's attributes: its address, a download and a new tab. */
 const linkAttrs = (to: string, dl?: boolean | string, tab?: boolean) => ({
 	href: to,

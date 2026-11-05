@@ -14,6 +14,7 @@
  * <MobileMenu links={[{ label: 'Work', href: '/work' }, { label: 'About', href: '/about' }]} cta={{ label: 'Get in touch', href: '/contact' }} top="64px" />
  */
 import { isCurrent } from '../runtime/mobile-menu.js';
+import { stableId } from './uid.js';
 
 interface Link {
 	/** The link's text. */
@@ -47,7 +48,7 @@ interface Props {
 }
 
 const { links, current = Astro.url.pathname, cta, more = [], breakpoint = 860, top = '4rem', label = 'Menu', class: className } = Astro.props;
-const uid = `ui-mm-${Math.random().toString(36).slice(2, 8)}`;
+const uid = stableId('ui-mm', Astro.request, { links, cta, more, breakpoint });
 /** The page marker for a link that is the current page. */
 const here = (href: string) => (isCurrent(href, current) ? 'page' : undefined);
 ---

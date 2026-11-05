@@ -333,3 +333,14 @@ main {
 		grid-template-columns: 1fr 1fr;
 	}
 }
+
+/* The install bar in the shop's colours: custom properties only, no selectors to outweigh. */
+.demo-install {
+	--ui-install-muted: var(--muted);
+	--ui-install-bg: var(--panel);
+	--ui-install-more: var(--accent);
+	--ui-menu-bg: var(--panel);
+	--ui-menu-fg: #f4f4f5;
+	--ui-menu-rule: var(--line);
+	--ui-menu-shadow: 0 20px 50px rgb(0 0 0 / 0.5);
+}

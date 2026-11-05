@@ -9,6 +9,7 @@
  * @example
  * <Faq items={[{ q: 'Is it free?', a: 'Yes — see the <a href="/licence">licence</a>.' }]} />
  */
+import { stableId } from './uid.js';
 
 interface Item {
 	/** The question. */
@@ -31,7 +32,7 @@ interface Props {
 }
 
 const { items, jsonLd = true, exclusive = false, openFirst = false, class: className } = Astro.props;
-const group = exclusive ? `ui-faq-${Math.random().toString(36).slice(2, 8)}` : undefined;
+const group = exclusive ? stableId('ui-faq', Astro.request, items) : undefined;
 /** An answer's text without its tags, for the structured data. */
 const plain = (html: string) =>
 	html

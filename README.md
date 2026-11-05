@@ -53,7 +53,7 @@ Astro 6 or 7. The runtime underneath (`@arraypress/ui-astro`) works without Astr
 | `<NoticeBar>` | An announcement bar across the top, remembered when closed | CSS + JS |
 | `<MobileMenu>` | A menu button that opens a full-screen panel of large links under the header | CSS + JS |
 | `<SplitButton>` | A main action with an arrow that opens a menu of further ones | CSS + JS |
-| `<InstallCommand>` | A copyable command bar with a menu of ways to install | CSS + JS |
+| `<InstallCommand>` | A copyable command bar with a menu of ways to install, themed by custom properties | CSS + JS |
 | `<Faq>` | Questions that open to their answers, with FAQPage structured data | CSS |
 | `<CopySwatch>` | A colour chip that copies its value | CSS + JS |
 

@@ -5,6 +5,20 @@ All notable changes to `@arraypress/ui-astro` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-11-05
+
+### Added
+
+- `<InstallCommand icons>`: its own icons (`chevron`, `copy`, `check`, `download`, `arrow`) as trusted SVG markup, so a site draws them as it draws its other icons.
+- `<InstallCommand more>`: one link set apart at the very foot of the menu, under a rule of its own, its icon after the words (an arrow by default), in `--ui-install-more` and bold: a page with every way to install.
+- `<InstallCommand id>`: a base for its element ids.
+- More `<InstallCommand>` custom properties: `--ui-install-text`, `--ui-install-hover` (the button), `--ui-install-item-hover` (menu rows), `--ui-install-size` and `--ui-install-pad` (the command), `--ui-install-link` (links in the note), `--ui-install-more`, `--ui-install-chev-turn` (how far the chevron turns when open; `0deg` holds it still), `--ui-menu-muted` (group titles, tags, icons), `--ui-menu-rule`, `--ui-menu-shadow` and `--ui-menu-leading`.
+
+### Changed
+
+- Element ids are the same on every build: a short hash of what the instance shows, with `-2`, `-3`… for later ones alike on the same page, in place of `Math.random` (`<InstallCommand>`, `<SplitButton>`, `<MobileMenu>`, `<Faq exclusive>`), so a site builds to the same bytes each time.
+- `<InstallCommand>` reads every custom property with a fallback rather than setting `--ui-install-line` and `--ui-install-muted` on itself, so a site can set any of them on the element or an ancestor without outweighing its scoped selectors.
+
 ## [0.3.0] — 2026-11-04
 
 ### Added
