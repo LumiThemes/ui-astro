@@ -1,0 +1,1953 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * @arraypress/ui-astro/forms.css
+ *
+ * A form kit: every form control, in every state (hover, focus, invalid
+ * once used, read-only, disabled). Inside a `.form` the plain elements
+ * are styled as they are, with no classes on inputs, selects or
+ * textareas. Outside one, put `.input` on a text control, `.select` on a
+ * select and `.textarea` on a textarea. The rest is a small contract:
+ *
+ *     <form class="form">
+ *       <div class="field">
+ *         <label class="field-label" for="n">Name <small>optional</small> <span class="field-count" data-count-for="n"></span></label>
+ *         <input id="n" name="name" maxlength="40" aria-describedby="n-hint n-error" />
+ *         <p class="field-hint" id="n-hint">…</p>
+ *         <p class="field-error" id="n-error">…</p>
+ *       </div>
+ *       <label class="field"><span class="field-label">…</span><input /></label>
+ *       <div class="form-row">…fields side by side…</div>
+ *       <fieldset class="field"><legend class="field-label">…</legend> choices </fieldset>
+ *       <label class="choice"><input type="checkbox" /> <span>Text <small>more</small></span></label>
+ *       <div class="choice-cards"><label class="choice-card"><input type="radio" /> …</label></div>
+ *       <div class="segmented"><label><input type="radio" /><span>Monthly</span></label>…</div>
+ *       <label class="switch"><input type="checkbox" role="switch" /> <span>Text</span></label>
+ *       <div class="input-group"><span class="input-addon">https://</span><input /><button class="input-addon">…</button></div>
+ *       <div class="range-field"><input id="r" type="range" /><output for="r" data-unit=" px"></output></div>
+ *       <div class="color-field"><input id="c" type="color" /><input type="text" data-color-for="c" /></div>
+ *       <label class="dropzone"><input id="f" type="file" multiple /> … </label> <ul class="file-list" data-files-for="f"></ul>
+ *       <select data-dropdown data-search="Filter…"><option data-desc="…" data-swatch="#hex">…</option></select>
+ *       <div class="form-status is-ok | is-error | is-info" role="status">…</div>
+ *       <div class="form-actions"><button class="button" type="submit">Send</button><button class="button-text" type="reset">Clear</button></div>
+ *       <div class="form-honeypot" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off" /></div>
+ *     </form>
+ *
+ * A `.field-error` shows once its field has been used and is invalid
+ * (`:user-invalid`), or with `.is-invalid` on the field (an error from
+ * the server; mark the control `aria-invalid="true"`). Buttons are the
+ * page's own `.button`: the kit adds a spinner over one with
+ * `aria-busy="true"`, and `.button-text` for a reset or cancel.
+ *
+ * The script is `forms()` from `@arraypress/ui-astro/runtime/forms`.
+ * Everything it does is an enhancement: without it the controls work as
+ * plain HTML. It starts each part once, and again only on controls added
+ * since, so call it after adding controls to the page. It:
+ *
+ * - fills a slider's track up to its thumb (`--fill`) and writes its
+ *   value into every `<output for>` naming it, then the output's `data-unit`;
+ * - keeps a `.field-count[data-count-for]` at "12 / 60" for a field with
+ *   a `maxlength` (`.is-near` at 90%, `.is-over` past it);
+ * - shows or hides a password from `button[data-reveal="id"]` (its own
+ *   words to show it, `data-hide` to hide it, default "Hide");
+ * - keeps a text input with `data-color-for="id"` and the colour input in step;
+ * - lets a `.dropzone` take dropped files, checks `accept`, `data-max-mb`
+ *   and `data-max-files` (the input's message is set, so the form will
+ *   not send), and lists the files, each removable, in its
+ *   `.file-list[data-files-for="id"]` (`.is-grid` for pictures); a
+ *   `.dropzone.is-image` shows the one picture in its `.dropzone-preview img`.
+ *   Previews are `data:` URLs, so a Content Security Policy needs `img-src data:`;
+ * - draws a `select[data-dropdown]` as a list of its own: descriptions
+ *   (`data-desc`), colour dots (`data-swatch`), groups, a filter
+ *   (`data-search`, its placeholder) and the keys a listbox takes. The
+ *   select stays in the form and keeps the value; a first option with no
+ *   value is the placeholder.
+ *
+ * Theme it with these custom properties. Their defaults follow the colour
+ * scheme (`Canvas`, `CanvasText`, so a dark site wants `color-scheme:
+ * dark`) and `--ui-accent`. Those made from others are worked out on
+ * `:root`, so set yours there, or set each one you need where you change
+ * a colour.
+ *
+ * | Property | Default | |
+ * |---|---|---|
+ * | `--ui-form-h`, `--ui-form-radius`, `--ui-form-pad` | `46px`, `12px`, `0.85rem` | A control's height, corners and side padding |
+ * | `--ui-form-text`, `--ui-form-muted` | `CanvasText`, it at 62% | Text and labels; hints, placeholders and small print |
+ * | `--ui-form-page` | `Canvas` | The ground behind, for ink on marks (a slider's thumb edge, the error and status marks) |
+ * | `--ui-form-bg`, `--ui-form-bg-off` | `Canvas`, text at 4% | A control's ground; read-only controls, add-ons, quiet grounds |
+ * | `--ui-form-hover`, `--ui-form-active` | text at 7%, the hover | A hovered button or option; the dropdown option the keys are on |
+ * | `--ui-form-border`, `--ui-form-border-hover` | text at 14%, at 28% | Edges, rules and empty bars; hovered edges and a slider's empty track |
+ * | `--ui-form-panel`, `--ui-form-panel-shadow` | `--ui-menu-bg` or `Canvas`, a soft shadow | A dropdown's list |
+ * | `--ui-form-on`, `--ui-form-on-ink` | `--ui-accent` or `#2563eb`, `--ui-accent-ink` or `#fff` | "On" (a ticked box, a switch, a chosen segment) and the ink on it |
+ * | `--ui-form-on-border`, `--ui-form-on-line`, `--ui-form-on-text` | `--ui-form-on` | Its edge; a slider's and a progress bar's fill; the colour as text or a mark on the ground |
+ * | `--ui-form-focus`, `--ui-form-ring`, `--ui-form-caret` | `--ui-form-on`, it at 22%, the focus | A focused control's edge, the glow round it and the caret |
+ * | `--ui-form-ok-bg`, `--ui-form-ok-border` | `--ui-form-on` at 9%, at 45% | A chosen card, a dropzone with files over it, a good status; that status's edge |
+ * | `--ui-form-danger`, `--ui-form-danger-bg` | `#dc2626`, it at 10% | Errors |
+ * | `--ui-form-warn` | `#ffb020` | A meter in its low range |
+ * | `--ui-form-swatch-edge` | text at 14% | The edge of a dropdown's colour dots |
+ * | `--ui-form-chevron`, `--ui-form-chevron-up`, `--ui-form-search` | grey SVGs | A select's arrow (and an open dropdown's), the search magnifier, as `url()` images |
+ * | `--ui-form-tick`, `--ui-form-dash` | SVGs | A ticked and a part-ticked box's mark, as masks painted in `--ui-form-on-ink` |
+ *
+ * With reduced motion nothing eases; the spinners turn slowly rather
+ * than stop, so they still say the form is busy.
+ * ───────────────────────────────────────────────────────────────────── */
+
+/* ---------- tokens (no weight: a site's own values always win) ---------- */
+:where(:root) {
+	--ui-form-h: 46px;
+	--ui-form-radius: 12px;
+	--ui-form-pad: 0.85rem;
+	--ui-form-text: CanvasText;
+	--ui-form-muted: color-mix(in srgb, CanvasText 62%, Canvas);
+	--ui-form-page: Canvas;
+	--ui-form-bg: Canvas;
+	--ui-form-bg-off: color-mix(in srgb, CanvasText 4%, Canvas);
+	--ui-form-hover: color-mix(in srgb, CanvasText 7%, Canvas);
+	--ui-form-active: var(--ui-form-hover);
+	--ui-form-border: color-mix(in srgb, CanvasText 14%, transparent);
+	--ui-form-border-hover: color-mix(in srgb, CanvasText 28%, transparent);
+	--ui-form-panel: var(--ui-menu-bg, Canvas);
+	--ui-form-panel-shadow:
+		0 20px 50px rgb(0 0 0 / 0.25),
+		0 2px 6px rgb(0 0 0 / 0.1);
+	/* "on": ticked boxes, switches, chosen segments, filled bars */
+	--ui-form-on: var(--ui-accent, #2563eb);
+	--ui-form-on-ink: var(--ui-accent-ink, #fff);
+	--ui-form-on-border: var(--ui-form-on);
+	--ui-form-on-line: var(--ui-form-on);
+	--ui-form-on-text: var(--ui-form-on);
+	/* a field you are in: its edge, a soft glow round it, the caret */
+	--ui-form-focus: var(--ui-form-on);
+	--ui-form-ring: color-mix(in srgb, var(--ui-form-on) 22%, transparent);
+	--ui-form-caret: var(--ui-form-focus);
+	--ui-form-ok-bg: color-mix(in srgb, var(--ui-form-on) 9%, transparent);
+	--ui-form-ok-border: color-mix(in srgb, var(--ui-form-on) 45%, transparent);
+	--ui-form-danger: #dc2626;
+	--ui-form-danger-bg: color-mix(in srgb, var(--ui-form-danger) 10%, transparent);
+	--ui-form-warn: #ffb020;
+	--ui-form-swatch-edge: color-mix(in srgb, CanvasText 14%, transparent);
+	/* drawn icons, as data: SVGs */
+	--ui-form-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	--ui-form-chevron-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 15 6-6 6 6'/%3E%3C/svg%3E");
+	--ui-form-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+	--ui-form-tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+	--ui-form-dash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M6 12h12'/%3E%3C/svg%3E");
+}
+
+/* ---------- layout (no weight: a page's own class for its form always wins) ---------- */
+:where(.form) {
+	display: grid;
+	gap: 1.4rem;
+	min-width: 0;
+}
+
+.form-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+	gap: 1rem 1.1rem;
+	align-items: start;
+}
+
+.form-section {
+	display: grid;
+	gap: 1.1rem;
+	padding-top: 1.6rem;
+	border-top: 1px solid var(--ui-form-border);
+}
+
+.form-section > h2,
+.form-section > h3 {
+	font-size: 1.05rem;
+	letter-spacing: -0.01em;
+}
+
+/* ---------- a field ---------- */
+.field {
+	display: grid;
+	gap: 0.45rem;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.field-label {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.15rem 0.5rem;
+	padding: 0;
+	color: var(--ui-form-text);
+	font-size: 0.86rem;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+.field-label small {
+	color: var(--ui-form-muted);
+	font-size: 0.8rem;
+	font-weight: 400;
+}
+
+/* a required mark, if wanted: <abbr class="field-req" title="required">*</abbr> */
+.field-req {
+	color: var(--ui-form-danger);
+	text-decoration: none;
+	cursor: help;
+}
+
+/* a running count (kept by the script), at the end of the label */
+.field-count {
+	margin-left: auto;
+	color: var(--ui-form-muted);
+	font-size: 0.76rem;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+}
+
+.field-count.is-near {
+	color: var(--ui-form-on-text);
+}
+
+.field-count.is-over {
+	color: var(--ui-form-danger);
+}
+
+.field-hint {
+	margin: 0;
+	color: var(--ui-form-muted);
+	font-size: 0.8rem;
+	line-height: 1.45;
+}
+
+.field-error {
+	display: none;
+	align-items: flex-start;
+	gap: 0.4rem;
+	margin: 0;
+	color: var(--ui-form-danger);
+	font-size: 0.8rem;
+	font-weight: 500;
+	line-height: 1.45;
+}
+
+.field-error::before {
+	content: '!';
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	width: 15px;
+	height: 15px;
+	margin-top: 0.1rem;
+	border-radius: 50%;
+	background: var(--ui-form-danger);
+	color: var(--ui-form-page);
+	font-size: 0.66rem;
+	font-weight: 800;
+}
+
+/* shown once the field has been used and is invalid (:user-invalid), or when the server says so (.is-invalid) */
+.field.is-invalid .field-error,
+.field:has(:user-invalid) .field-error {
+	display: flex;
+}
+
+/* ---------- text controls: text, email, url, tel, password, search, number, the dates and times ---------- */
+:where(.form)
+	:where(
+		input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color'], [type='submit'], [type='button'], [type='reset'], [type='image'], [type='hidden']),
+		select,
+		textarea
+	),
+.input,
+.select,
+.textarea {
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	min-height: var(--ui-form-h);
+	margin: 0;
+	padding: 0.6rem var(--ui-form-pad);
+	border: 1px solid var(--ui-form-border);
+	border-radius: var(--ui-form-radius);
+	background: var(--ui-form-bg);
+	color: var(--ui-form-text);
+	font: inherit;
+	font-size: 0.95rem;
+	line-height: 1.4;
+	caret-color: var(--ui-form-caret);
+	transition:
+		border-color 0.15s,
+		box-shadow 0.15s,
+		background 0.15s;
+	appearance: none;
+}
+
+:where(.form) :where(input, select, textarea)::placeholder,
+.input::placeholder,
+.textarea::placeholder {
+	color: var(--ui-form-muted);
+	opacity: 0.7;
+}
+
+:where(.form) :where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color']), select, textarea):hover,
+.input:hover,
+.select:hover,
+.textarea:hover {
+	border-color: var(--ui-form-border-hover);
+}
+
+:where(.form) :where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color']), select, textarea):focus-visible,
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible {
+	border-color: var(--ui-form-focus);
+	outline: none;
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+/* invalid, once used (or flagged by the server with aria-invalid) */
+:where(.form) :where(input, select, textarea):user-invalid,
+:where(.form) :where(input, select, textarea)[aria-invalid='true'],
+.input[aria-invalid='true'],
+.select[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
+	border-color: var(--ui-form-danger);
+}
+
+:where(.form) :where(input, select, textarea):user-invalid:focus-visible,
+:where(.form) :where(input, select, textarea)[aria-invalid='true']:focus-visible {
+	box-shadow: 0 0 0 3px var(--ui-form-danger-bg);
+}
+
+/* read-only: shown, not editable */
+:where(.form) :where(input, textarea):read-only:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color']),
+.input:read-only {
+	border-style: dashed;
+	background: var(--ui-form-bg-off);
+	color: var(--ui-form-muted);
+}
+
+/* disabled */
+:where(.form) :where(input, select, textarea, button):disabled,
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+/* the browser's autofill colour, replaced with the kit's */
+:where(.form) input:autofill,
+.input:autofill {
+	-webkit-text-fill-color: var(--ui-form-text);
+	caret-color: var(--ui-form-caret);
+	box-shadow: 0 0 0 100px var(--ui-form-bg-off) inset;
+}
+
+/* number: the steppers kept (they're useful), quieter */
+:where(.form) input[type='number']::-webkit-inner-spin-button {
+	opacity: 0.4;
+}
+
+:where(.form) input[type='number'] {
+	font-variant-numeric: tabular-nums;
+}
+
+/* search: a magnifier in front, the native clear button kept */
+:where(.form) input[type='search'],
+.input[type='search'] {
+	padding-left: 2.5rem;
+	background-image: var(--ui-form-search);
+	background-position: 0.85rem 50%;
+	background-repeat: no-repeat;
+	background-size: 17px;
+}
+
+:where(.form) input[type='search']::-webkit-search-cancel-button {
+	opacity: 0.55;
+	cursor: pointer;
+}
+
+/* dates and times: the native pickers (color-scheme follows the theme), numbers in columns */
+:where(.form) :where(input[type='date'], input[type='time'], input[type='datetime-local'], input[type='month'], input[type='week']) {
+	font-variant-numeric: tabular-nums;
+}
+
+:where(.form) ::-webkit-calendar-picker-indicator {
+	opacity: 0.6;
+	cursor: pointer;
+}
+
+:where(.form) ::-webkit-calendar-picker-indicator:hover {
+	opacity: 1;
+}
+
+:where(.form) ::-webkit-datetime-edit-fields-wrapper {
+	padding: 0;
+}
+
+/* a short code (a one-time code, a voucher): spaced, monospaced, centred */
+:where(.form) input.is-code,
+.input.is-code {
+	max-width: 15rem;
+	font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+	font-size: 1.15rem;
+	letter-spacing: 0.4em;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+/* ---------- textarea: grows with its text, between a few lines and a screenful ---------- */
+:where(.form) textarea,
+.textarea {
+	min-height: 7.5rem;
+	max-height: 60vh;
+	padding-top: 0.7rem;
+	padding-bottom: 0.7rem;
+	line-height: 1.55;
+	resize: vertical;
+	field-sizing: content;
+}
+
+/* ---------- select: a drawn chevron; a styled dropdown where the browser allows it (customisable select) ---------- */
+:where(.form) select:not([multiple], [size]),
+.select:not([multiple], [size]) {
+	padding-right: 2.6rem;
+	background-image: var(--ui-form-chevron);
+	background-position: right 0.85rem center;
+	background-repeat: no-repeat;
+	background-size: 16px;
+	cursor: pointer;
+}
+
+@supports (appearance: base-select) {
+	:where(.form) select:not([multiple], [size]),
+	.select:not([multiple], [size]) {
+		appearance: base-select;
+		display: flex;
+		align-items: center;
+	}
+
+	:where(.form) select:not([multiple], [size])::picker-icon,
+	.select:not([multiple], [size])::picker-icon {
+		display: none; /* the chevron is the background */
+	}
+
+	:where(.form) select:not([multiple], [size])::picker(select),
+	.select:not([multiple], [size])::picker(select) {
+		appearance: base-select;
+		margin-top: 6px;
+		padding: 0.35rem;
+		border: 1px solid var(--ui-form-border-hover);
+		border-radius: var(--ui-form-radius);
+		background: var(--ui-form-panel);
+		color: var(--ui-form-text);
+		box-shadow: 0 18px 48px rgb(0 0 0 / 0.35);
+	}
+
+	:where(.form) select:not([multiple], [size]) option,
+	.select:not([multiple], [size]) option {
+		padding: 0.5rem 0.65rem;
+		border-radius: 8px;
+		font-size: 0.92rem;
+	}
+
+	:where(.form) select:not([multiple], [size]) option:hover,
+	:where(.form) select:not([multiple], [size]) option:focus-visible,
+	.select:not([multiple], [size]) option:hover {
+		outline: none;
+		background: var(--ui-form-hover);
+	}
+
+	:where(.form) select:not([multiple], [size]) option:checked,
+	.select:not([multiple], [size]) option:checked {
+		font-weight: 600;
+	}
+
+	:where(.form) select option::checkmark,
+	.select option::checkmark {
+		color: var(--ui-form-on-text);
+	}
+
+	:where(.form) select option:disabled {
+		opacity: 0.45;
+	}
+}
+
+/* several at once: a list box */
+:where(.form) select:is([multiple], [size]),
+.select:is([multiple], [size]) {
+	padding: 0.35rem;
+}
+
+:where(.form) select:is([multiple], [size]) option {
+	padding: 0.45rem 0.6rem;
+	border-radius: 8px;
+}
+
+:where(.form) select:is([multiple], [size]) option:checked {
+	background: var(--ui-form-on) linear-gradient(var(--ui-form-on), var(--ui-form-on)); /* (a gradient beats the browser's grey) */
+	color: var(--ui-form-on-ink);
+}
+
+:where(.form) optgroup {
+	color: var(--ui-form-muted);
+	font-size: 0.78rem;
+	font-weight: 600;
+}
+
+/* ---------- add-ons: a prefix or suffix in the same box (https://, £, /mo), or a button (show password, copy) ---------- */
+.input-group {
+	display: flex;
+	align-items: stretch;
+	min-height: var(--ui-form-h);
+	border: 1px solid var(--ui-form-border);
+	border-radius: var(--ui-form-radius);
+	background: var(--ui-form-bg);
+	transition:
+		border-color 0.15s,
+		box-shadow 0.15s;
+}
+
+.input-group:hover {
+	border-color: var(--ui-form-border-hover);
+}
+
+.input-group:focus-within {
+	border-color: var(--ui-form-focus);
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+.input-group:has(:user-invalid),
+.input-group:has([aria-invalid='true']) {
+	border-color: var(--ui-form-danger);
+}
+
+.input-group :where(input, select) {
+	flex: 1;
+	min-height: 0 !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	background-color: transparent !important; /* (the colour only: a search keeps its magnifier) */
+	box-shadow: none !important;
+}
+
+.input-addon {
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0 0.8rem;
+	border: 0;
+	background: var(--ui-form-bg-off);
+	color: var(--ui-form-muted);
+	font: inherit;
+	font-size: 0.88rem;
+	white-space: nowrap;
+}
+
+.input-addon:first-child {
+	border-right: 1px solid var(--ui-form-border);
+	border-radius: calc(var(--ui-form-radius) - 1px) 0 0 calc(var(--ui-form-radius) - 1px);
+}
+
+.input-addon:last-child {
+	border-left: 1px solid var(--ui-form-border);
+	border-radius: 0 calc(var(--ui-form-radius) - 1px) calc(var(--ui-form-radius) - 1px) 0;
+}
+
+/* an add-on that's text without a box: the unit sits in the field (no tint, no rule) */
+.input-addon.is-plain {
+	border: 0;
+	background: none;
+}
+
+.input-addon.is-plain:first-child {
+	padding-right: 0;
+}
+
+.input-addon.is-plain:last-child {
+	padding-left: 0;
+}
+
+button.input-addon {
+	color: var(--ui-form-text);
+	font-weight: 600;
+	cursor: pointer;
+}
+
+button.input-addon:hover {
+	background: var(--ui-form-hover);
+	color: var(--ui-form-on-text);
+}
+
+button.input-addon:focus-visible {
+	outline: 2px solid var(--ui-form-focus);
+	outline-offset: -3px;
+}
+
+/* ---------- checkboxes and radios ---------- */
+:where(.form) :where(input[type='checkbox'], input[type='radio']),
+.check {
+	position: relative;
+	display: inline-grid;
+	flex-shrink: 0;
+	place-content: center;
+	width: 20px;
+	height: 20px;
+	margin: 0;
+	border: 1.5px solid var(--ui-form-border-hover);
+	border-radius: 6px;
+	background: var(--ui-form-bg) no-repeat center / 15px;
+	cursor: pointer;
+	transition:
+		background-color 0.12s,
+		border-color 0.12s,
+		box-shadow 0.15s;
+	appearance: none;
+}
+
+:where(.form) input[type='radio'] {
+	border-radius: 50%;
+}
+
+:where(.form) :where(input[type='checkbox'], input[type='radio']):hover {
+	border-color: var(--ui-form-text);
+}
+
+:where(.form) :where(input[type='checkbox'], input[type='radio']):focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+:where(.form) input[type='checkbox']:is(:checked, :indeterminate) {
+	border-color: var(--ui-form-on-border);
+	background-color: var(--ui-form-on);
+}
+
+/* the tick (or the dash), painted in the ink so it follows the colours */
+:where(.form) input[type='checkbox']:is(:checked, :indeterminate)::after {
+	content: '';
+	width: 15px;
+	height: 15px;
+	background: var(--ui-form-on-ink);
+	mask: var(--ui-form-tick) center / contain no-repeat;
+}
+
+:where(.form) input[type='checkbox']:indeterminate::after {
+	mask-image: var(--ui-form-dash);
+}
+
+:where(.form) input[type='radio']:checked {
+	border-color: var(--ui-form-on-border);
+	background: var(--ui-form-on);
+}
+
+:where(.form) input[type='radio']:checked::after {
+	content: '';
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--ui-form-on-ink);
+}
+
+:where(.form) :where(input[type='checkbox'], input[type='radio']):user-invalid {
+	border-color: var(--ui-form-danger);
+}
+
+/* a box or dot with its words */
+.choice {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.7rem;
+	width: fit-content;
+	color: var(--ui-form-text);
+	font-size: 0.93rem;
+	line-height: 1.4;
+	cursor: pointer;
+}
+
+.choice > input {
+	margin-top: 0.05rem !important;
+}
+
+.choice > span {
+	display: grid;
+	gap: 0.1rem;
+}
+
+.choice small {
+	color: var(--ui-form-muted);
+	font-size: 0.8rem;
+}
+
+.choice:has(input:disabled) {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+/* a list of choices */
+.choices {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.choices.is-inline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.5rem;
+}
+
+/* ---------- choice cards: a bigger target, for plans, slots, options ---------- */
+.choice-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+	gap: 0.6rem;
+}
+
+.choice-card {
+	position: relative;
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: start;
+	gap: 0.3rem 0.8rem;
+	padding: 0.95rem 1rem;
+	border: 1px solid var(--ui-form-border);
+	border-radius: 14px;
+	background: var(--ui-form-bg);
+	cursor: pointer;
+	transition:
+		border-color 0.15s,
+		background 0.15s,
+		box-shadow 0.15s;
+}
+
+.choice-card:hover {
+	border-color: var(--ui-form-border-hover);
+}
+
+.choice-card:has(input:checked) {
+	border-color: var(--ui-form-on-border);
+	background: var(--ui-form-ok-bg);
+	box-shadow: inset 0 0 0 1px var(--ui-form-on-border);
+}
+
+.choice-card:has(input:focus-visible) {
+	box-shadow:
+		inset 0 0 0 1px var(--ui-form-on-border),
+		0 0 0 3px var(--ui-form-ring);
+}
+
+.choice-card:has(input:disabled) {
+	cursor: not-allowed;
+	opacity: 0.45;
+}
+
+.choice-card > input {
+	margin-top: 0.1rem !important;
+}
+
+.choice-card strong {
+	display: block;
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+
+.choice-card small {
+	display: block;
+	margin-top: 0.15rem;
+	color: var(--ui-form-muted);
+	font-size: 0.8rem;
+	line-height: 1.4;
+}
+
+.choice-card-aside {
+	font-size: 1.05rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+}
+
+.choice-card-aside small {
+	display: inline;
+	font-size: 0.78rem;
+	font-weight: 400;
+}
+
+/* the radio itself hidden: the whole card is the choice (keep it for keyboard and screen readers) */
+.choice-cards.is-bare .choice-card {
+	grid-template-columns: 1fr auto;
+}
+
+.choice-cards.is-bare .choice-card > input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* ---------- segmented: one of a few, side by side ---------- */
+.segmented {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 3px;
+	width: fit-content;
+	padding: 3px;
+	border: 1px solid var(--ui-form-border);
+	border-radius: var(--ui-form-radius);
+	background: var(--ui-form-bg-off);
+}
+
+.segmented label {
+	position: relative;
+	display: block;
+	cursor: pointer;
+}
+
+.segmented input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.segmented span {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.5rem 0.95rem;
+	border-radius: 9px;
+	color: var(--ui-form-muted);
+	font-size: 0.88rem;
+	font-weight: 600;
+	transition:
+		background 0.15s,
+		color 0.15s;
+}
+
+.segmented label:hover span {
+	color: var(--ui-form-text);
+}
+
+.segmented input:checked + span {
+	background: var(--ui-form-on);
+	color: var(--ui-form-on-ink);
+}
+
+.segmented input:focus-visible + span {
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+.segmented input:disabled + span {
+	cursor: not-allowed;
+	opacity: 0.45;
+}
+
+/* ---------- switch: on or off, taking effect at once ---------- */
+.switch {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	width: fit-content;
+	font-size: 0.93rem;
+	cursor: pointer;
+}
+
+.switch > span {
+	display: grid;
+	gap: 0.1rem;
+}
+
+.switch small {
+	color: var(--ui-form-muted);
+	font-size: 0.8rem;
+}
+
+:where(.form) .switch input[type='checkbox'],
+.switch input[type='checkbox'] {
+	position: relative;
+	display: block;
+	flex-shrink: 0;
+	width: 40px;
+	height: 24px;
+	margin: 0;
+	border: 1.5px solid var(--ui-form-border-hover);
+	border-radius: 99px;
+	background: var(--ui-form-bg-off);
+	background-image: none;
+	cursor: pointer;
+	transition:
+		background 0.18s,
+		border-color 0.18s;
+	appearance: none;
+}
+
+.switch input[type='checkbox']::after {
+	content: '';
+	mask: none; /* the knob, not a tick */
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 17px;
+	height: 17px;
+	border-radius: 50%;
+	background: var(--ui-form-muted);
+	transition:
+		transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.3),
+		background 0.18s;
+}
+
+.switch input[type='checkbox']:checked {
+	border-color: var(--ui-form-on-border);
+	background: var(--ui-form-on);
+	background-image: none;
+}
+
+.switch input[type='checkbox']:checked::after {
+	background: var(--ui-form-on-ink);
+	transform: translateX(16px);
+}
+
+.switch input[type='checkbox']:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+.switch:has(input:disabled) {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+/* ---------- range: a thin rail, filled to the thumb (--fill, kept by the script) ---------- */
+:where(.form) input[type='range'],
+.range {
+	--fill: 50%;
+	width: 100%;
+	height: 22px;
+	margin: 0;
+	background: transparent;
+	cursor: pointer;
+	appearance: none;
+}
+
+:where(.form) input[type='range']::-webkit-slider-runnable-track,
+.range::-webkit-slider-runnable-track {
+	height: 4px;
+	border-radius: 99px;
+	background: linear-gradient(90deg, var(--ui-form-on-line) var(--fill), var(--ui-form-border-hover) var(--fill));
+}
+
+:where(.form) input[type='range']::-moz-range-track,
+.range::-moz-range-track {
+	height: 4px;
+	border-radius: 99px;
+	background: var(--ui-form-border-hover);
+}
+
+:where(.form) input[type='range']::-moz-range-progress,
+.range::-moz-range-progress {
+	height: 4px;
+	border-radius: 99px;
+	background: var(--ui-form-on-line);
+}
+
+:where(.form) input[type='range']::-webkit-slider-thumb,
+.range::-webkit-slider-thumb {
+	width: 18px;
+	height: 18px;
+	margin-top: -7px;
+	border: 2px solid var(--ui-form-page);
+	border-radius: 50%;
+	background: var(--ui-form-text);
+	box-shadow: 0 1px 6px rgb(0 0 0 / 0.35);
+	transition: transform 0.12s;
+	appearance: none;
+}
+
+:where(.form) input[type='range']::-moz-range-thumb,
+.range::-moz-range-thumb {
+	width: 14px;
+	height: 14px;
+	border: 2px solid var(--ui-form-page);
+	border-radius: 50%;
+	background: var(--ui-form-text);
+	box-shadow: 0 1px 6px rgb(0 0 0 / 0.35);
+}
+
+:where(.form) input[type='range']:active::-webkit-slider-thumb {
+	transform: scale(1.15);
+}
+
+:where(.form) input[type='range']:focus-visible {
+	outline: none;
+}
+
+:where(.form) input[type='range']:focus-visible::-webkit-slider-thumb {
+	box-shadow: 0 0 0 4px var(--ui-form-ring);
+}
+
+:where(.form) input[type='range']:focus-visible::-moz-range-thumb {
+	box-shadow: 0 0 0 4px var(--ui-form-ring);
+}
+
+/* a slider with its value beside it, and its ends under it */
+.range-field {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	gap: 0.3rem 0.9rem;
+}
+
+.range-ends {
+	display: flex;
+	grid-column: 1;
+	justify-content: space-between;
+	color: var(--ui-form-muted);
+	font-size: 0.76rem;
+}
+
+/* ---------- output: a computed value ---------- */
+:where(.form) output,
+.output {
+	display: inline-block;
+	min-width: 3.2rem;
+	padding: 0.2rem 0.5rem;
+	border: 1px solid var(--ui-form-border);
+	border-radius: 8px;
+	background: var(--ui-form-bg-off);
+	color: var(--ui-form-text);
+	font-size: 0.82rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+}
+
+/* ---------- colour: a swatch, with its hex beside it ---------- */
+:where(.form) input[type='color'],
+.color-swatch {
+	flex-shrink: 0;
+	width: var(--ui-form-h);
+	height: var(--ui-form-h);
+	padding: 4px;
+	border: 1px solid var(--ui-form-border);
+	border-radius: var(--ui-form-radius);
+	background: var(--ui-form-bg);
+	cursor: pointer;
+	appearance: none;
+}
+
+:where(.form) input[type='color']::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+
+:where(.form) input[type='color']::-webkit-color-swatch {
+	border: 0;
+	border-radius: 8px;
+}
+
+:where(.form) input[type='color']::-moz-color-swatch {
+	border: 0;
+	border-radius: 8px;
+}
+
+:where(.form) input[type='color']:hover {
+	border-color: var(--ui-form-border-hover);
+}
+
+:where(.form) input[type='color']:focus-visible {
+	border-color: var(--ui-form-focus);
+	outline: none;
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+.color-field {
+	display: flex;
+	gap: 0.5rem;
+	max-width: 15rem;
+}
+
+.color-field input[type='text'] {
+	font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+	font-size: 0.9rem;
+	text-transform: uppercase;
+}
+
+/* ---------- files: the plain input, a dropzone, and what was chosen ---------- */
+:where(.form) input[type='file'] {
+	width: 100%;
+	max-width: 100%;
+	color: var(--ui-form-muted);
+	font: inherit;
+	font-size: 0.86rem;
+}
+
+:where(.form) input[type='file']::file-selector-button {
+	margin-right: 0.85rem;
+	padding: 0.6rem 1rem;
+	border: 1px solid var(--ui-form-border);
+	border-radius: 10px;
+	background: var(--ui-form-bg);
+	color: var(--ui-form-text);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition: border-color 0.15s;
+}
+
+:where(.form) input[type='file']::file-selector-button:hover {
+	border-color: var(--ui-form-border-hover);
+}
+
+:where(.form) input[type='file']:focus-visible {
+	outline: none;
+}
+
+:where(.form) input[type='file']:focus-visible::file-selector-button {
+	border-color: var(--ui-form-focus);
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+/* the dropzone: a label round a file input (drop files on it, or click to choose) */
+.dropzone {
+	position: relative;
+	display: grid;
+	justify-items: center;
+	gap: 0.35rem;
+	padding: 1.8rem 1.25rem;
+	border: 1.5px dashed var(--ui-form-border-hover);
+	border-radius: 16px;
+	background: var(--ui-form-bg);
+	color: var(--ui-form-muted);
+	font-size: 0.86rem;
+	text-align: center;
+	cursor: pointer;
+	transition:
+		border-color 0.15s,
+		background 0.15s,
+		box-shadow 0.15s;
+}
+
+.dropzone:hover {
+	border-color: var(--ui-form-text);
+}
+
+.dropzone:focus-within {
+	border-color: var(--ui-form-focus);
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+.dropzone[data-state='over'] {
+	border-color: var(--ui-form-on-border);
+	border-style: solid;
+	background: var(--ui-form-ok-bg);
+}
+
+.dropzone:has(input:disabled) {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.dropzone.is-invalid,
+.dropzone:has(:user-invalid) {
+	border-color: var(--ui-form-danger);
+}
+
+/* the input stays in the page (focusable, required works), out of sight */
+.dropzone input[type='file'] {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.dropzone-icon {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	margin-bottom: 0.35rem;
+	border: 1px solid var(--ui-form-border);
+	border-radius: 12px;
+	background: var(--ui-form-bg-off);
+	color: var(--ui-form-text);
+}
+
+.dropzone[data-state='over'] .dropzone-icon {
+	border-color: var(--ui-form-on-border);
+	background: var(--ui-form-on);
+	color: var(--ui-form-on-ink);
+}
+
+.dropzone strong {
+	color: var(--ui-form-text);
+	font-size: 0.93rem;
+	font-weight: 600;
+}
+
+.dropzone strong u {
+	text-decoration-color: var(--ui-form-on-text);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+
+/* a single image (a logo, an avatar): the picture fills the zone once chosen */
+.dropzone.is-image {
+	width: 9.5rem;
+	aspect-ratio: 1;
+	align-content: center;
+	padding: 0.75rem;
+	overflow: hidden;
+}
+
+.dropzone.is-image.is-round {
+	border-radius: 50%;
+}
+
+.dropzone-preview {
+	position: absolute;
+	inset: 0;
+	display: none;
+	background: var(--ui-form-bg-off);
+}
+
+.dropzone-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	padding: 0.75rem;
+}
+
+.dropzone.is-round .dropzone-preview img {
+	object-fit: cover; /* a photo fills the circle */
+	padding: 0;
+}
+
+.dropzone.has-file .dropzone-preview {
+	display: block;
+}
+
+.dropzone-change {
+	position: absolute;
+	bottom: 0.5rem;
+	left: 50%;
+	display: none;
+	padding: 0.25rem 0.6rem;
+	border-radius: 99px;
+	background: rgb(10 10 12 / 0.75);
+	color: #fff;
+	font-size: 0.72rem;
+	font-weight: 600;
+	transform: translateX(-50%);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+}
+
+.dropzone.has-file .dropzone-change {
+	display: block;
+}
+
+/* what was chosen: rows (any file) */
+.file-list {
+	display: grid;
+	gap: 0.45rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.file-list:empty {
+	display: none;
+}
+
+.file {
+	display: grid;
+	grid-template-columns: 40px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0.55rem 0.5rem 0.5rem;
+	border: 1px solid var(--ui-form-border);
+	border-radius: 12px;
+	background: var(--ui-form-bg);
+}
+
+.file.is-error {
+	border-color: var(--ui-form-danger);
+	background: var(--ui-form-danger-bg);
+}
+
+.file-thumb {
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	overflow: hidden;
+	border-radius: 8px;
+	background: var(--ui-form-bg-off);
+	color: var(--ui-form-muted);
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.file-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.file-name {
+	display: grid;
+	min-width: 0;
+	font-size: 0.86rem;
+	font-weight: 500;
+}
+
+.file-name b {
+	overflow: hidden;
+	font-weight: inherit;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.file-name small {
+	color: var(--ui-form-muted);
+	font-size: 0.76rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.file.is-error .file-name small {
+	color: var(--ui-form-danger);
+}
+
+.file-remove {
+	display: grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: var(--ui-form-muted);
+	cursor: pointer;
+}
+
+.file-remove:hover {
+	background: var(--ui-form-hover);
+	color: var(--ui-form-text);
+}
+
+/* an upload in progress: a bar along the row's foot */
+.file progress {
+	grid-column: 1 / -1;
+	height: 3px;
+}
+
+/* what was chosen: a grid of pictures */
+.file-list.is-grid {
+	grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+	gap: 0.55rem;
+}
+
+.file-list.is-grid .file {
+	position: relative;
+	display: block;
+	aspect-ratio: 1;
+	padding: 0;
+	overflow: hidden;
+}
+
+.file-list.is-grid .file-thumb {
+	width: 100%;
+	height: 100%;
+	border-radius: 0;
+}
+
+.file-list.is-grid .file-name {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	padding: 1rem 0.5rem 0.35rem;
+	background: linear-gradient(transparent, rgb(0 0 0 / 0.7));
+	color: #fff;
+	font-size: 0.7rem;
+}
+
+.file-list.is-grid .file-name small {
+	color: rgb(255 255 255 / 0.75);
+	font-size: 0.66rem;
+}
+
+.file-list.is-grid .file-remove {
+	position: absolute;
+	top: 0.3rem;
+	right: 0.3rem;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: rgb(10 10 12 / 0.7);
+	color: #fff;
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+}
+
+/* ---------- progress and meter ---------- */
+:where(.form) progress,
+.progress {
+	width: 100%;
+	height: 6px;
+	overflow: hidden;
+	border: 0;
+	border-radius: 99px;
+	background: var(--ui-form-border);
+	appearance: none;
+}
+
+:where(.form) progress::-webkit-progress-bar {
+	border-radius: 99px;
+	background: var(--ui-form-border);
+}
+
+:where(.form) progress::-webkit-progress-value {
+	border-radius: 99px;
+	background: var(--ui-form-on-line);
+	transition: inline-size 0.3s;
+}
+
+:where(.form) progress::-moz-progress-bar {
+	border-radius: 99px;
+	background: var(--ui-form-on-line);
+}
+
+/* no value yet: a moving sliver */
+:where(.form) progress:indeterminate {
+	background: linear-gradient(90deg, transparent 0 35%, var(--ui-form-on-line) 35% 65%, transparent 65%) var(--ui-form-border) 0 0 / 300% 100% no-repeat;
+	animation: ui-form-busy 1.2s linear infinite;
+}
+
+:where(.form) progress:indeterminate::-webkit-progress-bar {
+	background: transparent;
+}
+
+:where(.form) progress:indeterminate::-moz-progress-bar {
+	background: transparent;
+}
+
+@keyframes ui-form-busy {
+	from {
+		background-position: 150% 0;
+	}
+
+	to {
+		background-position: -50% 0;
+	}
+}
+
+:where(.form) meter,
+.meter {
+	width: 100%;
+	height: 6px;
+	border: 0;
+	border-radius: 99px;
+	background: var(--ui-form-border);
+	appearance: none;
+}
+
+:where(.form) meter::-webkit-meter-bar {
+	height: 6px;
+	border: 0;
+	border-radius: 99px;
+	background: var(--ui-form-border);
+}
+
+:where(.form) meter::-webkit-meter-optimum-value {
+	border-radius: 99px;
+	background: var(--ui-form-on-text);
+}
+
+:where(.form) meter::-webkit-meter-suboptimum-value {
+	border-radius: 99px;
+	background: var(--ui-form-warn);
+}
+
+:where(.form) meter::-webkit-meter-even-less-good-value {
+	border-radius: 99px;
+	background: var(--ui-form-danger);
+}
+
+:where(.form) meter:-moz-meter-optimum::-moz-meter-bar {
+	background: var(--ui-form-on-text);
+}
+
+:where(.form) meter:-moz-meter-sub-optimum::-moz-meter-bar {
+	background: var(--ui-form-warn);
+}
+
+:where(.form) meter:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+	background: var(--ui-form-danger);
+}
+
+/* ---------- status: after sending (or trying) ---------- */
+.form-status {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: start;
+	gap: 0.15rem 0.75rem;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--ui-form-border);
+	border-radius: 14px;
+	background: var(--ui-form-bg-off);
+	font-size: 0.9rem;
+	line-height: 1.5;
+}
+
+.form-status[hidden] {
+	display: none;
+}
+
+.form-status::before {
+	content: 'i';
+	display: grid;
+	grid-row: span 2;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	margin-top: 0.05rem;
+	border-radius: 50%;
+	background: var(--ui-form-text);
+	color: var(--ui-form-page);
+	font-size: 0.78rem;
+	font-weight: 800;
+}
+
+.form-status strong {
+	font-weight: 600;
+}
+
+.form-status p {
+	grid-column: 2;
+	margin: 0;
+	color: var(--ui-form-muted);
+}
+
+.form-status.is-ok {
+	border-color: var(--ui-form-ok-border);
+	background: var(--ui-form-ok-bg);
+}
+
+.form-status.is-ok::before {
+	content: '✓';
+	background: var(--ui-form-on);
+	color: var(--ui-form-on-ink);
+}
+
+.form-status.is-error {
+	border-color: color-mix(in srgb, var(--ui-form-danger) 50%, transparent);
+	background: var(--ui-form-danger-bg);
+}
+
+.form-status.is-error::before {
+	content: '!';
+	background: var(--ui-form-danger);
+	color: #fff;
+}
+
+/* ---------- actions: the buttons, and a note beside them ---------- */
+.form-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1rem;
+}
+
+.form-actions .form-note {
+	flex: 1 1 16rem;
+}
+
+.form-note {
+	margin: 0;
+	color: var(--ui-form-muted);
+	font-size: 0.82rem;
+	line-height: 1.5;
+}
+
+.form .button {
+	font: inherit;
+	font-size: 0.95rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.form button.button:disabled {
+	opacity: 0.45;
+}
+
+/* sending: the label stays (so the width holds), a spinner sits over it */
+.button[aria-busy='true'] {
+	position: relative;
+	color: transparent !important;
+	pointer-events: none;
+}
+
+.button[aria-busy='true']::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 16px;
+	height: 16px;
+	margin: -8px 0 0 -8px;
+	border: 2px solid var(--ui-form-on-ink);
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: ui-form-spin 0.7s linear infinite;
+}
+
+.button-secondary[aria-busy='true']::after {
+	border-color: var(--ui-form-text);
+	border-right-color: transparent;
+}
+
+@keyframes ui-form-spin {
+	to {
+		transform: rotate(1turn);
+	}
+}
+
+/* a reset or cancel: a text button */
+.button-text {
+	padding: 0.75rem 0.4rem;
+	border: 0;
+	background: none;
+	color: var(--ui-form-muted);
+	font: inherit;
+	font-size: 0.95rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.button-text:hover {
+	color: var(--ui-form-text);
+}
+
+/* ---------- inline: one field and its button on a line (a newsletter, a code) ---------- */
+.form-inline {
+	display: flex;
+	gap: 0.5rem;
+	max-width: 28rem;
+}
+
+.form-inline > :where(input, .input) {
+	flex: 1;
+}
+
+@media (max-width: 480px) {
+	.form-inline {
+		flex-direction: column;
+	}
+}
+
+/* ---------- spam traps and checks ---------- */
+/* the honeypot: a field people never see, so only bots fill it */
+.form-honeypot {
+	position: absolute !important;
+	left: -10000px !important;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
+/* where a spam check such as Cloudflare Turnstile draws itself (65 px tall; flexible width) */
+.form-turnstile {
+	min-height: 65px;
+}
+
+.form-turnstile:empty {
+	min-height: 0;
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+	.form *,
+	.form *::before,
+	.form *::after {
+		transition: none !important;
+	}
+
+	:where(.form) progress:indeterminate,
+	.button[aria-busy='true']::after {
+		animation-duration: 3s;
+	}
+}
+
+/* ---------- dropdown: a <select data-dropdown>, drawn as a list of its own (by the script) ----------
+   The select stays in the form (its value is sent, `required` works); the trigger and list stand in for it.
+   Options can carry `data-desc` (a second line) and `data-swatch` (a colour dot); `data-search` on the select
+   adds a filter box. Without the script it's the plain select, styled as above. */
+.dropdown {
+	position: relative;
+	min-width: 0;
+}
+
+/* the select, kept for the form: out of sight, still validated */
+.dropdown > select {
+	position: absolute !important;
+	inset: 0;
+	width: 100% !important;
+	opacity: 0 !important;
+	pointer-events: none;
+}
+
+.dropdown-trigger {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	width: 100%;
+	min-height: var(--ui-form-h);
+	padding: 0.5rem 2.6rem 0.5rem var(--ui-form-pad);
+	border: 1px solid var(--ui-form-border);
+	border-radius: var(--ui-form-radius);
+	background: var(--ui-form-bg) var(--ui-form-chevron) no-repeat right 0.85rem center / 16px;
+	color: var(--ui-form-text);
+	font: inherit;
+	font-size: 0.95rem;
+	text-align: left;
+	cursor: pointer;
+	transition:
+		border-color 0.15s,
+		box-shadow 0.15s;
+}
+
+.dropdown-trigger:hover {
+	border-color: var(--ui-form-border-hover);
+}
+
+.dropdown-trigger:focus-visible,
+.dropdown.is-open .dropdown-trigger {
+	border-color: var(--ui-form-focus);
+	outline: none;
+	box-shadow: 0 0 0 3px var(--ui-form-ring);
+}
+
+.dropdown.is-open .dropdown-trigger {
+	background-image: var(--ui-form-chevron-up);
+}
+
+.dropdown-trigger:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.dropdown-value {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.dropdown-value.is-placeholder {
+	color: var(--ui-form-muted);
+	opacity: 0.85;
+}
+
+.dropdown:has(select:user-invalid) .dropdown-trigger,
+.dropdown:has(select[aria-invalid='true']) .dropdown-trigger {
+	border-color: var(--ui-form-danger);
+}
+
+/* the list */
+.dropdown-panel {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	left: 0;
+	z-index: 60;
+	display: grid;
+	gap: 0.25rem;
+	min-width: 14rem;
+	padding: 0.35rem;
+	border: 1px solid var(--ui-form-border-hover);
+	border-radius: 14px;
+	background: var(--ui-form-panel);
+	box-shadow: var(--ui-form-panel-shadow);
+	transform-origin: top center;
+	animation: ui-form-drop 0.14s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dropdown-panel[hidden] {
+	display: none;
+}
+
+.dropdown.is-up .dropdown-panel {
+	top: auto;
+	bottom: calc(100% + 6px);
+	transform-origin: bottom center;
+}
+
+@keyframes ui-form-drop {
+	from {
+		opacity: 0;
+		transform: translateY(-4px) scale(0.98);
+	}
+}
+
+.dropdown-search {
+	min-height: 38px !important;
+	padding: 0.45rem 0.7rem 0.45rem 2.2rem !important;
+	border-radius: 9px !important;
+	background: var(--ui-form-bg-off) var(--ui-form-search) no-repeat 0.7rem 50% / 15px !important;
+	font-size: 0.88rem !important;
+}
+
+.dropdown-list {
+	display: grid;
+	gap: 1px;
+	max-height: 18rem;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	list-style: none;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+}
+
+.dropdown-list:focus {
+	outline: none;
+}
+
+.dropdown-group {
+	padding: 0.55rem 0.65rem 0.25rem;
+	color: var(--ui-form-muted);
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.dropdown-option {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) 16px;
+	align-items: center;
+	gap: 0.65rem;
+	padding: 0.55rem 0.65rem;
+	border-radius: 9px;
+	color: var(--ui-form-text);
+	font-size: 0.92rem;
+	line-height: 1.35;
+	cursor: pointer;
+}
+
+.dropdown-option.has-no-lead {
+	grid-template-columns: minmax(0, 1fr) 16px;
+}
+
+.dropdown-option.is-active {
+	background: var(--ui-form-active);
+}
+
+.dropdown-option[aria-selected='true'] {
+	font-weight: 600;
+}
+
+/* the tick on the chosen one */
+.dropdown-option::after {
+	content: '';
+	width: 16px;
+	height: 16px;
+}
+
+.dropdown-option[aria-selected='true']::after {
+	background: var(--ui-form-on-text);
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.dropdown-option[aria-disabled='true'] {
+	cursor: not-allowed;
+	opacity: 0.4;
+}
+
+.dropdown-option[hidden] {
+	display: none;
+}
+
+.dropdown-option small {
+	display: block;
+	margin-top: 0.1rem;
+	color: var(--ui-form-muted);
+	font-size: 0.78rem;
+	font-weight: 400;
+}
+
+.dropdown-swatch {
+	width: 18px;
+	height: 18px;
+	border-radius: 6px;
+	box-shadow: inset 0 0 0 1px var(--ui-form-swatch-edge);
+}
+
+.dropdown-trigger .dropdown-swatch {
+	flex-shrink: 0;
+}
+
+.dropdown-empty {
+	padding: 0.7rem;
+	color: var(--ui-form-muted);
+	font-size: 0.86rem;
+	text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dropdown-panel {
+		animation: none;
+	}
+}
+
+/* ---------- spacing, to the pixel ---------- */
+/* a fieldset's legend isn't a grid item (the gap skips it): give it the same 0.45rem a label gets */
+.field > legend {
+	margin-bottom: 0.45rem;
+}
+
+/* words beside a box, a dot or a switch flow as text (a link stays in the line); the second line drops under */
+.choice > span,
+.switch > span {
+	display: block;
+}
+
+.choice small,
+.switch small {
+	display: block;
+	margin-top: 0.15rem;
+	line-height: 1.4;
+}
+
+/* a box or dot centred on the first line: a 20 px control on a 1.4 line */
+.choice {
+	line-height: 1.4;
+}
+
+.choice > input {
+	margin-top: calc((0.93rem * 1.4 - 20px) / 2) !important; /* (the label's size: an input's own em is smaller) */
+}
+
+/* a switch: on the first line too, not between two */
+.switch {
+	align-items: flex-start;
+	line-height: 1.4;
+}
+
+.switch > span {
+	padding-top: calc((24px - 1.4em) / 2);
+}
+
+/* a card: the dot, the title and the price share one line height, so their middles meet */
+.choice-card strong,
+.choice-card-aside {
+	line-height: 1.3rem;
+}
+
+.choice-card > input {
+	margin-top: calc((1.3rem - 20px) / 2) !important;
+}
+
+.choice-card small {
+	line-height: 1.4;
+}

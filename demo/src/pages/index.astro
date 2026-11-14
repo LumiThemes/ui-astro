@@ -15,6 +15,7 @@ import Skeleton from '@arraypress/ui-astro/Skeleton.astro';
 import SplitButton from '@arraypress/ui-astro/SplitButton.astro';
 import Timeline from '@arraypress/ui-astro/Timeline.astro';
 import VinylSleeve from '@arraypress/ui-astro/VinylSleeve.astro';
+import '@arraypress/ui-astro/forms.css';
 import '@arraypress/ui-astro/tooltip.css';
 import '../styles/demo.css';
 
@@ -207,6 +208,80 @@ const tips: Record<string, string> = {
 				</div>
 			</section>
 
+			<section id="pressing" class="block split">
+				<header>
+					<p class="piece">forms.css · forms()</p>
+					<h2>Press your own</h2>
+					<p>A short run of your record, in your colours. Plain form controls, styled by the stylesheet; the script fills the slider, counts the title, checks the artwork and draws the vinyl list.</p>
+				</header>
+				<form class="form card" data-pressing>
+					<div class="form-row">
+						<div class="field">
+							<label class="field-label" for="p-title">Title <span class="field-count" data-count-for="p-title"></span></label>
+							<input id="p-title" name="title" maxlength="40" placeholder="Low Tide" />
+						</div>
+						<div class="field">
+							<label class="field-label" for="p-email">Email</label>
+							<input id="p-email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" aria-describedby="p-email-error" />
+							<p class="field-error" id="p-email-error">That does not look like an email address.</p>
+						</div>
+					</div>
+					<div class="field">
+						<label class="field-label" for="p-vinyl">Vinyl</label>
+						<select id="p-vinyl" name="vinyl" data-dropdown required aria-describedby="p-vinyl-error">
+							<option value="">Choose a vinyl…</option>
+							<option value="black" data-swatch="#18181b" data-desc="140 g, the standard">Black</option>
+							<option value="heavy" data-swatch="#09090b" data-desc="180 g, flatter and quieter">Heavyweight black</option>
+							<option value="lime" data-swatch="#a3e635" data-desc="Translucent, 140 g">Lime</option>
+							<option value="sky" data-swatch="#38bdf8" data-desc="Marbled, 140 g">Sky marble</option>
+							<option value="gold" data-swatch="#eab308" data-desc="Back in the spring" disabled>Gold</option>
+						</select>
+						<p class="field-error" id="p-vinyl-error">Choose a vinyl.</p>
+					</div>
+					<div class="form-row">
+						<fieldset class="field">
+							<legend class="field-label">Speed</legend>
+							<div class="segmented">
+								<label><input type="radio" name="speed" value="33" checked /><span>33⅓</span></label>
+								<label><input type="radio" name="speed" value="45" /><span>45</span></label>
+							</div>
+						</fieldset>
+						<div class="field">
+							<label class="field-label" for="p-label">Label colour</label>
+							<div class="color-field">
+								<input id="p-label" name="label" type="color" value="#a3e635" />
+								<input type="text" data-color-for="p-label" maxlength="7" spellcheck="false" aria-label="Label colour as hex" />
+							</div>
+						</div>
+					</div>
+					<div class="field">
+						<label class="field-label" for="p-copies">Copies</label>
+						<div class="range-field">
+							<input id="p-copies" name="copies" type="range" min="100" max="1000" step="50" value="300" />
+							<output for="p-copies" data-unit=" copies"></output>
+							<span class="range-ends"><span>100</span><span>1,000</span></span>
+						</div>
+					</div>
+					<div class="field">
+						<span class="field-label">Artwork <small>up to 4 images, 10 MB each</small></span>
+						<label class="dropzone" data-max-mb="10" data-max-files="4">
+							<input id="p-art" name="art" type="file" accept="image/*" multiple />
+							<strong>Drop the sleeve and labels, or <u>choose</u></strong>
+							<span>PNG, JPG or SVG</span>
+						</label>
+						<ul class="file-list is-grid" data-files-for="p-art"></ul>
+					</div>
+					<div class="choices">
+						<label class="switch"><input type="checkbox" name="gatefold" role="switch" checked /> <span>Gatefold sleeve <small>opens like a book</small></span></label>
+						<label class="choice"><input type="checkbox" required /> <span>The music is mine to press</span></label>
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="button ghost">Ask for a quote</button>
+						<button type="reset" class="button-text">Clear</button>
+					</div>
+				</form>
+			</section>
+
 			<section class="block">
 				<header>
 					<p class="piece">&lt;Countdown&gt;</p>
@@ -298,6 +373,11 @@ const tips: Record<string, string> = {
 
 		<script>
 			import { numberFormat } from '@arraypress/ui-astro';
+			import { forms } from '@arraypress/ui-astro/runtime/forms';
+
+			// The pressing form: the kit's script, and no real sending.
+			forms();
+			document.querySelector('[data-pressing]')?.addEventListener('submit', (e) => e.preventDefault());
 
 			// Play buttons: one release plays at a time, its sleeve spinning and its meter bouncing.
 			const releases = [...document.querySelectorAll<HTMLElement>('[data-release]')];

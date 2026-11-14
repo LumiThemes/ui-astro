@@ -5,6 +5,22 @@ All notable changes to `@arraypress/ui-astro` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — 2026-11-15
+
+### Added
+
+- `forms.css`: a form kit. Inside a `.form` the plain controls are styled as they are (text, number, search, the dates and times, select, list box, textarea, checkbox, radio, range, colour, file, progress, meter, output), in every state, with a small markup contract for the rest: fields with labels, hints, counts and errors shown once used, rows, sections, add-ons, choices and choice cards, segmented controls, switches, dropzones and file lists, a drawn dropdown, statuses, actions with a busy spinner, inline forms, a honeypot and a spam-check slot. `.input`, `.select` and `.textarea` style controls outside a form. Themed by `--ui-form-*` custom properties, defaulting to the colour scheme and `--ui-accent`.
+- `forms()` (`@arraypress/ui-astro/runtime/forms`): the kit's script, an enhancement throughout and safe to run again: sliders' fill and `<output>` (with `data-unit`), running counts, password reveals, colour inputs kept in step with their hex, dropzones that check, list and remove files (with image previews), and `select[data-dropdown]` drawn as a listbox with descriptions, colour dots, groups, a filter and the listbox keys. Each part is its own module in `runtime/forms/` (`formRange`, `fieldCount`, `revealPassword`, `colorPair`, `fileDrop`, `dropdown`), with the pure helpers `countState`, `hexValue`, `checkFiles`, `fileSize`, `fileTag`, `opensUp` and `typeAhead`.
+- `rangeFill` and `rangeShare` (the slider fill `<Range>` and the form kit share); `nextFiles` and `putFiles` (putting files in an input, as `<Dropzone>` and the form kit do).
+- `dropzone(el, { filter, add })`: keep every dropped file rather than only those `accept` allows, and add to a multiple input's files rather than replace them. The defaults are as before.
+- `menuStep(at, key, length, wrap)`: `wrap` false stops at the ends, as a listbox does.
+- COMPONENTS.md documents the stylesheets, from their header comments.
+- A dependency, `@arraypress/file-utils`, for the file sizes in the kit's file lists.
+
+### Changed
+
+- `<Dropzone>` (and `dropzone`) claims every drag of files over it, so a file dropped on a disabled zone is ignored rather than opened in the tab.
+
 ## [0.4.0] — 2026-11-05
 
 ### Added

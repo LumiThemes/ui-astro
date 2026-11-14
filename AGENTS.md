@@ -16,6 +16,7 @@ Pick by what is asked for:
 | An upload | `<Dropzone>` (set `data-busy` while processing) |
 | A story, roadmap or process | `<Timeline>` |
 | Tooltips | `tooltip.css` and `data-tip` (repeat the words in `aria-label`) |
+| A form: fields, choices, sliders, uploads, a styled select | `forms.css` and `forms()` from `runtime/forms` (the markup is in COMPONENTS.md) |
 | Page chrome | `<ScrollProgress>`, `<BackToTop>`, once in the layout |
 | An announcement across the top (a launch, a sale) | `<NoticeBar>` (change its `id` to show a new one to people who closed the last) |
 | Questions and answers | `<Faq>` (FAQPage JSON-LD comes with it; `jsonLd={false}` if the page has its own) |
@@ -36,16 +37,18 @@ Things that trip people up:
 - **`<SplitButton>` buttons do nothing by themselves.** Give the main action and menu items an `action` and listen for `ui-action` on the component (`e.detail.action`); links (`href`) just go.
 - **Icons are SVG strings** (`icon` on `<InstallCommand>` options and links, `<SplitButton>`, `<MobileMenu>`'s `cta`): trusted markup, set as HTML. So are `<InstallCommand>` notes.
 - **Menus and the mobile panel use `Canvas` and `CanvasText`** unless `--ui-menu-bg` / `--ui-menu-fg` (or `--ui-mobile-menu-bg` / `-fg`) are set, so a dark site needs `color-scheme: dark` or those set. Buttons and the current link use `--ui-accent` (default `#2563eb`) and `--ui-accent-ink`.
+- **`forms.css` styles plain markup, not components.** Its classes (`.form`, `.field`, `.dropzone`…) and hooks (`data-count-for`, `data-dropdown`…) carry no `ui-` prefix: they are the markup you write. Call `forms()` again after adding controls; it starts only the new ones. Previews of chosen images are `data:` URLs, so a Content Security Policy needs `img-src data:`.
+- **Theme `forms.css` on `:root`.** Its `--ui-form-*` defaults that follow others (`--ui-form-ring` from `--ui-form-on`…) are worked out there, so a value set lower down changes only that property.
 - **Do not reimplement** reduced motion or view-transition restarts around the components: they do both.
 
 ## Working on this package
 
-Plain ES modules in `src/` with hand-written `.d.ts` files beside them: components in `src/components/`, the runtime in `src/runtime/` (one concern a file), stylesheets in `src/styles/`. No build step and no dependencies. `demo/` is an Astro site (not published): one page with every piece in place.
+Plain ES modules in `src/` with hand-written `.d.ts` files beside them: components in `src/components/`, the runtime in `src/runtime/` (one concern a file; the form kit's parts in `src/runtime/forms/`), stylesheets in `src/styles/`. No build step, and one dependency: `@arraypress/file-utils` (dependency-free itself), for the form kit's file sizes. `demo/` is an Astro site (not published): one page with every piece in place.
 
 | | |
 |---|---|
 | `npm test` | Node's test runner over `tests/*.test.js`. Run before every commit. |
-| `npm run docs` | Regenerates COMPONENTS.md from the components' `Props` and the runtime `.d.ts` files. Run after changing any prop. |
+| `npm run docs` | Regenerates COMPONENTS.md from the components' `Props`, the runtime `.d.ts` files and the stylesheets' header comments. Run after changing any prop or a stylesheet's header. |
 | `cd demo && npm run dev` | The demo on http://127.0.0.1:4410. |
 
 After changing a component, check it in the demo: it renders, the console is clean, and reduced motion gets its still state.
@@ -58,5 +61,5 @@ After changing a component, check it in the demo: it renders, the console is cle
 - **No repetition.** Anything two components need goes in its own runtime module and is imported.
 - **JSDoc on every function**, nested ones included: a short description, `@param` for each parameter, `@returns`, `@throws` where it applies. Every prop has a doc comment with its default (COMPONENTS.md is built from them). Keep the `.d.ts` files in step. Plain, concise voice: what a thing does and why.
 - **Every moving part has a still state** under `prefers-reduced-motion: reduce`.
-- **No telemetry, no network, no dependencies.** Components ship inside sites for other people's visitors.
+- **No telemetry, no network, no dependencies beyond `@arraypress/file-utils`.** Components ship inside sites for other people's visitors.
 - **Every change goes in CHANGELOG.md** (Keep a Changelog, SemVer). Commit and push only with the owner's go-ahead; the owner publishes to npm.

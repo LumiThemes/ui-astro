@@ -1,9 +1,9 @@
 /**
- * Where a key moves the focus in a list of items: `ArrowDown` and `ArrowUp` wrap round, `Home` and `End`
- * go to the ends; from no item (`at` -1), down goes to the first and up to the last. Any other key
- * returns `at`; an empty list returns -1.
+ * Where a key moves the focus in a list of items: `ArrowDown` and `ArrowUp` wrap round (or, with `wrap`
+ * false, stop at the ends), `Home` and `End` go to the ends; from no item (`at` -1), down goes to the
+ * first and up to the last. Any other key returns `at`; an empty list returns -1.
  */
-export function menuStep(at: number, key: string, length: number): number;
+export function menuStep(at: number, key: string, length: number, wrap?: boolean): number;
 
 /** A drop-down menu wired to its button. */
 export interface PopupMenu {

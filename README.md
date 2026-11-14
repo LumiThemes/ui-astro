@@ -1,6 +1,6 @@
 # @arraypress/ui-astro
 
-Small UI pieces for Astro sites, as components: a countdown to a drop, loading skeletons, a range slider that writes its value the reader's way, a file dropzone, a timeline that fills as you scroll, tooltips from an attribute, an announcement bar, an FAQ, a mobile menu, a split button, a copyable install command, colour swatches, page chrome, and the record sleeve and level meter a music shop wants. Plain CSS and a few lines of script, with no dependencies.
+Small UI pieces for Astro sites, as components: a countdown to a drop, loading skeletons, a range slider that writes its value the reader's way, a file dropzone, a timeline that fills as you scroll, tooltips from an attribute, an announcement bar, an FAQ, a mobile menu, a split button, a copyable install command, colour swatches, page chrome, and the record sleeve and level meter a music shop wants. And a form kit: a stylesheet for every form control, with a script for the parts that need one. Plain CSS and a few lines of script.
 
 ```astro
 ---
@@ -68,6 +68,7 @@ Astro 6 or 7. The runtime underneath (`@arraypress/ui-astro`) works without Astr
 
 | Import | Classes |
 |---|---|
+| `@arraypress/ui-astro/forms.css` | `.form` and its fields, choices, sliders, dropzones and dropdowns (the markup and `--ui-form-*` properties in COMPONENTS.md); the script is `forms()` |
 | `@arraypress/ui-astro/tooltip.css` | `data-tip="…"` on any element, `data-tip-side="bottom"` |
 
 ## Runtime
@@ -77,9 +78,10 @@ The package's main entry is the runtime the components are built on, for use wit
 | Export | |
 |---|---|
 | `countdown(el)` | Keeps a countdown's tiles ticking to its `data-target` |
-| `range(el, style)` | Keeps a range input's fill and its `<output>` in step |
+| `range(el, style)`, `rangeFill(input)` | Keeps a range input's fill and its `<output>` in step; the fill alone |
 | `numberFormat(style)` | Numbers the reader's way: language, currency, decimals, compact |
-| `dropzone(el)`, `accepts(file, accept)` | A drop target for a file input, and whether a file matches an `accept` list |
+| `dropzone(el, options)`, `accepts(file, accept)`, `putFiles(input, files)` | A drop target for a file input, whether a file matches an `accept` list, and files put in an input |
+| `forms()` | Starts `forms.css`'s script: sliders, counts, password reveals, colour inputs, dropzones with their file lists, dropdowns (each part also on its own) |
 | `timeline(el)` | Fills a timeline as the page scrolls |
 | `scrollChrome()` | The one scroll listener behind `<ScrollProgress>` and `<BackToTop>` |
 | `noticeBar(el, config)`, `noticeEnded` | An announcement bar's closing and end date |

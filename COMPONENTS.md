@@ -1,6 +1,6 @@
 # Components
 
-Every component in `@arraypress/ui-astro`, with every prop. Generated from the components' own types by `node scripts/components-doc.mjs`; do not edit by hand.
+Every component in `@arraypress/ui-astro`, with every prop, and every stylesheet. Generated from the components' own types and the stylesheets' own headers by `node scripts/components-doc.mjs`; do not edit by hand.
 
 Import each from its own path: `import Name from '@arraypress/ui-astro/Name.astro'`.
 
@@ -282,3 +282,111 @@ VinylSleeve: a record in its sleeve. The cover is the sleeve; on hover or focus 
 | `playing` | `boolean` | Start spinning, as if playing. Default false. |
 | `speed` | `number` | Seconds a turn takes. Default 1.8. |
 | `class` | `string` | Classes for the element. |
+
+# Stylesheets
+
+For elements you render yourself: `import '@arraypress/ui-astro/name.css'`.
+
+## `forms.css`
+
+A form kit: every form control, in every state (hover, focus, invalid
+once used, read-only, disabled). Inside a `.form` the plain elements
+are styled as they are, with no classes on inputs, selects or
+textareas. Outside one, put `.input` on a text control, `.select` on a
+select and `.textarea` on a textarea. The rest is a small contract:
+
+    <form class="form">
+      <div class="field">
+        <label class="field-label" for="n">Name <small>optional</small> <span class="field-count" data-count-for="n"></span></label>
+        <input id="n" name="name" maxlength="40" aria-describedby="n-hint n-error" />
+        <p class="field-hint" id="n-hint">…</p>
+        <p class="field-error" id="n-error">…</p>
+      </div>
+      <label class="field"><span class="field-label">…</span><input /></label>
+      <div class="form-row">…fields side by side…</div>
+      <fieldset class="field"><legend class="field-label">…</legend> choices </fieldset>
+      <label class="choice"><input type="checkbox" /> <span>Text <small>more</small></span></label>
+      <div class="choice-cards"><label class="choice-card"><input type="radio" /> …</label></div>
+      <div class="segmented"><label><input type="radio" /><span>Monthly</span></label>…</div>
+      <label class="switch"><input type="checkbox" role="switch" /> <span>Text</span></label>
+      <div class="input-group"><span class="input-addon">https://</span><input /><button class="input-addon">…</button></div>
+      <div class="range-field"><input id="r" type="range" /><output for="r" data-unit=" px"></output></div>
+      <div class="color-field"><input id="c" type="color" /><input type="text" data-color-for="c" /></div>
+      <label class="dropzone"><input id="f" type="file" multiple /> … </label> <ul class="file-list" data-files-for="f"></ul>
+      <select data-dropdown data-search="Filter…"><option data-desc="…" data-swatch="#hex">…</option></select>
+      <div class="form-status is-ok | is-error | is-info" role="status">…</div>
+      <div class="form-actions"><button class="button" type="submit">Send</button><button class="button-text" type="reset">Clear</button></div>
+      <div class="form-honeypot" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off" /></div>
+    </form>
+
+A `.field-error` shows once its field has been used and is invalid
+(`:user-invalid`), or with `.is-invalid` on the field (an error from
+the server; mark the control `aria-invalid="true"`). Buttons are the
+page's own `.button`: the kit adds a spinner over one with
+`aria-busy="true"`, and `.button-text` for a reset or cancel.
+
+The script is `forms()` from `@arraypress/ui-astro/runtime/forms`.
+Everything it does is an enhancement: without it the controls work as
+plain HTML. It starts each part once, and again only on controls added
+since, so call it after adding controls to the page. It:
+
+- fills a slider's track up to its thumb (`--fill`) and writes its
+  value into every `<output for>` naming it, then the output's `data-unit`;
+- keeps a `.field-count[data-count-for]` at "12 / 60" for a field with
+  a `maxlength` (`.is-near` at 90%, `.is-over` past it);
+- shows or hides a password from `button[data-reveal="id"]` (its own
+  words to show it, `data-hide` to hide it, default "Hide");
+- keeps a text input with `data-color-for="id"` and the colour input in step;
+- lets a `.dropzone` take dropped files, checks `accept`, `data-max-mb`
+  and `data-max-files` (the input's message is set, so the form will
+  not send), and lists the files, each removable, in its
+  `.file-list[data-files-for="id"]` (`.is-grid` for pictures); a
+  `.dropzone.is-image` shows the one picture in its `.dropzone-preview img`.
+  Previews are `data:` URLs, so a Content Security Policy needs `img-src data:`;
+- draws a `select[data-dropdown]` as a list of its own: descriptions
+  (`data-desc`), colour dots (`data-swatch`), groups, a filter
+  (`data-search`, its placeholder) and the keys a listbox takes. The
+  select stays in the form and keeps the value; a first option with no
+  value is the placeholder.
+
+Theme it with these custom properties. Their defaults follow the colour
+scheme (`Canvas`, `CanvasText`, so a dark site wants `color-scheme:
+dark`) and `--ui-accent`. Those made from others are worked out on
+`:root`, so set yours there, or set each one you need where you change
+a colour.
+
+| Property | Default | |
+|---|---|---|
+| `--ui-form-h`, `--ui-form-radius`, `--ui-form-pad` | `46px`, `12px`, `0.85rem` | A control's height, corners and side padding |
+| `--ui-form-text`, `--ui-form-muted` | `CanvasText`, it at 62% | Text and labels; hints, placeholders and small print |
+| `--ui-form-page` | `Canvas` | The ground behind, for ink on marks (a slider's thumb edge, the error and status marks) |
+| `--ui-form-bg`, `--ui-form-bg-off` | `Canvas`, text at 4% | A control's ground; read-only controls, add-ons, quiet grounds |
+| `--ui-form-hover`, `--ui-form-active` | text at 7%, the hover | A hovered button or option; the dropdown option the keys are on |
+| `--ui-form-border`, `--ui-form-border-hover` | text at 14%, at 28% | Edges, rules and empty bars; hovered edges and a slider's empty track |
+| `--ui-form-panel`, `--ui-form-panel-shadow` | `--ui-menu-bg` or `Canvas`, a soft shadow | A dropdown's list |
+| `--ui-form-on`, `--ui-form-on-ink` | `--ui-accent` or `#2563eb`, `--ui-accent-ink` or `#fff` | "On" (a ticked box, a switch, a chosen segment) and the ink on it |
+| `--ui-form-on-border`, `--ui-form-on-line`, `--ui-form-on-text` | `--ui-form-on` | Its edge; a slider's and a progress bar's fill; the colour as text or a mark on the ground |
+| `--ui-form-focus`, `--ui-form-ring`, `--ui-form-caret` | `--ui-form-on`, it at 22%, the focus | A focused control's edge, the glow round it and the caret |
+| `--ui-form-ok-bg`, `--ui-form-ok-border` | `--ui-form-on` at 9%, at 45% | A chosen card, a dropzone with files over it, a good status; that status's edge |
+| `--ui-form-danger`, `--ui-form-danger-bg` | `#dc2626`, it at 10% | Errors |
+| `--ui-form-warn` | `#ffb020` | A meter in its low range |
+| `--ui-form-swatch-edge` | text at 14% | The edge of a dropdown's colour dots |
+| `--ui-form-chevron`, `--ui-form-chevron-up`, `--ui-form-search` | grey SVGs | A select's arrow (and an open dropdown's), the search magnifier, as `url()` images |
+| `--ui-form-tick`, `--ui-form-dash` | SVGs | A ticked and a part-ticked box's mark, as masks painted in `--ui-form-on-ink` |
+
+With reduced motion nothing eases; the spinners turn slowly rather
+than stop, so they still say the form is busy.
+
+## `tooltip.css`
+
+Tooltips from an attribute, no script: `data-tip="…"` on any element
+shows the text in a bubble with an arrow when it is hovered or focused
+with the keyboard, rising a little as it fades in. `data-tip-side=
+"bottom"` puts it below. Colours from `--tip-bg`, `--tip-color` and
+`--tip-border` (default the page's colours, inverted, with a faint edge
+of the element's text colour so it stands off a page of the same tone).
+
+A tooltip drawn by CSS is not read out: put the same words in the
+element's `aria-label` or in its text, so nothing depends on seeing it.
+
+From the SugarCart site.

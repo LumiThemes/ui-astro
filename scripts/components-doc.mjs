@@ -1,7 +1,8 @@
 /**
  * Writes COMPONENTS.md: every component's props, from the components
  * themselves (their `Props` interfaces) and the runtime `.d.ts` files
- * their settings come from, so the reference cannot drift from the code.
+ * their settings come from, then every stylesheet, from its header
+ * comment, so the reference cannot drift from the code.
  *
  *   node scripts/components-doc.mjs
  *
@@ -15,6 +16,7 @@ import { join } from 'node:path';
 const root = new URL('..', import.meta.url).pathname;
 const components = join(root, 'src/components');
 const runtime = join(root, 'src/runtime');
+const styles = join(root, 'src/styles');
 
 /**
  * The members of a TypeScript interface body: doc, name, optional, type.
@@ -85,9 +87,30 @@ function findInterface(text, name) {
  */
 const cell = (s) => s.replace(/\|/g, '\\|');
 
+/**
+ * A stylesheet's header comment as Markdown: the comment's lines without
+ * their leading ` * `, less the rules round it and its first line (the
+ * import path, which becomes the heading).
+ *
+ * @param {string} text The stylesheet.
+ * @returns {string} Its description.
+ */
+function stylesheetDoc(text) {
+	const comment = text.match(/^\/\*([\s\S]*?)\*\//)?.[1] ?? '';
+	const lines = comment
+		.split('\n')
+		.map((line) => line.replace(/^\s*\*\s?/, ''))
+		.filter((line) => !/^[─\s]*$/.test(line) || line === '');
+	const start = lines.findIndex((line) => line.startsWith('@arraypress/'));
+	return lines
+		.slice(start + 1)
+		.join('\n')
+		.trim();
+}
+
 let out = `# Components
 
-Every component in \`@arraypress/ui-astro\`, with every prop. Generated from the components' own types by \`node scripts/components-doc.mjs\`; do not edit by hand.
+Every component in \`@arraypress/ui-astro\`, with every prop, and every stylesheet. Generated from the components' own types and the stylesheets' own headers by \`node scripts/components-doc.mjs\`; do not edit by hand.
 
 Import each from its own path: \`import Name from '@arraypress/ui-astro/Name.astro'\`.
 `;
@@ -115,5 +138,8 @@ for (const file of files) {
 		for (const r of rows) out += `| \`${r.name}\`${r.optional ? '' : ' (required)'} | \`${cell(r.type)}\` | ${cell(r.doc)} |\n`;
 	}
 }
+const sheets = readdirSync(styles).filter((f) => f.endsWith('.css')).sort();
+out += `\n# Stylesheets\n\nFor elements you render yourself: \`import '@arraypress/ui-astro/name.css'\`.\n`;
+for (const file of sheets) out += `\n## \`${file}\`\n\n${stylesheetDoc(readFileSync(join(styles, file), 'utf8'))}\n`;
 writeFileSync(join(root, 'COMPONENTS.md'), out);
-console.log(`COMPONENTS.md: ${files.length} components`);
+console.log(`COMPONENTS.md: ${files.length} components, ${sheets.length} stylesheets`);

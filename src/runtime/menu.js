@@ -13,21 +13,23 @@
 const ITEMS = ['menuitem', 'menuitemradio', 'menuitemcheckbox'].map((role) => `[role="${role}"]:not([disabled])`).join(', ');
 
 /**
- * Where a key moves the focus in a list of items: down and up wrap round,
- * Home and End go to the ends. From no item (`at` -1), down goes to the
- * first and up to the last.
+ * Where a key moves the focus in a list of items: down and up wrap round
+ * (or stop at the ends), Home and End go to the ends. From no item (`at`
+ * -1), down goes to the first and up to the last.
  *
  * @param {number} at The item with the focus, or -1 for none.
  * @param {string} key The key (`ArrowDown`, `ArrowUp`, `Home`, `End`).
  * @param {number} length How many items there are.
+ * @param {boolean} [wrap=true] Past the last comes the first, and before
+ *   the first the last; false stops at the ends, as a listbox does.
  * @returns {number} The item to focus; `at` for any other key, -1 for an empty list.
  */
-export function menuStep(at, key, length) {
+export function menuStep(at, key, length, wrap = true) {
 	if (length <= 0) return -1;
 	if (key === 'Home') return 0;
 	if (key === 'End') return length - 1;
-	if (key === 'ArrowDown') return at < 0 ? 0 : (at + 1) % length;
-	if (key === 'ArrowUp') return at < 0 ? length - 1 : (at - 1 + length) % length;
+	if (key === 'ArrowDown') return at < 0 ? 0 : wrap ? (at + 1) % length : Math.min(at + 1, length - 1);
+	if (key === 'ArrowUp') return at < 0 ? length - 1 : wrap ? (at - 1 + length) % length : Math.max(at - 1, 0);
 	return at;
 }
 

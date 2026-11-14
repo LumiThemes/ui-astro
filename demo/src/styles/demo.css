@@ -6,6 +6,13 @@
 	--muted: #a1a1aa;
 	--accent: #a3e635;
 	color-scheme: dark;
+	/* The form kit in the shop's colours; on the root, where the kit works out the rest from them. */
+	--ui-form-on: var(--accent);
+	--ui-form-on-ink: #0b0c0e;
+	--ui-form-bg: var(--bg);
+	--ui-form-panel: var(--panel);
+	--ui-form-muted: var(--muted);
+	--ui-form-border: var(--line);
 }
 html {
 	background: var(--bg);
