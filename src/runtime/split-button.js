@@ -5,7 +5,7 @@
  * menu.js), choosing an item closes it, and the main action and any menu
  * item that is a button (not a link) send a `ui-action` event from the
  * root with the item's `data-action` in `detail.action`, for the page to
- * act on.
+ * act on. Using the main action closes an open menu.
  */
 
 import { popupMenu } from './menu.js';
@@ -23,11 +23,14 @@ export function splitButton(el) {
 	const menu = popupMenu(el, trigger, menuEl);
 
 	/**
-	 * Sends the action of a clicked button, and closes the menu after a menu item.
+	 * Sends the action of a clicked button, and closes the menu after a menu
+	 * item or the main action.
 	 *
 	 * @param {MouseEvent} e The click.
 	 */
 	const onClick = (e) => {
+		const at = /** @type {Node} */ (e.target);
+		if (!menuEl.contains(at) && !trigger.contains(at)) menu.close();
 		const target = /** @type {HTMLElement | null} */ (/** @type {Element} */ (e.target).closest('[data-action], [role="menuitem"]'));
 		if (!target || !el.contains(target) || target === trigger) return;
 		const inMenu = menuEl.contains(target);

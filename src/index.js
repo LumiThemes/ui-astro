@@ -23,7 +23,7 @@ export { installCommand } from './runtime/install-command.js';
 export { mobileMenu, isCurrent } from './runtime/mobile-menu.js';
 export { splitButton } from './runtime/split-button.js';
 export { copySwatch } from './runtime/copy-swatch.js';
-export { popupMenu, menuStep } from './runtime/menu.js';
+export { popupMenu, menuStep, itemShows } from './runtime/menu.js';
 export { copyText, flash } from './runtime/clipboard.js';
 export { parseColor, formatColor, inkFor } from './runtime/color.js';
 export { forms, formRange, fieldCount, countState, revealPassword, colorPair, hexValue, fileDrop, checkFiles, fileSize, fileTag, dropdown, opensUp, typeAhead } from './runtime/forms.js';

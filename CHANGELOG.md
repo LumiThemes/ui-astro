@@ -5,6 +5,25 @@ All notable changes to `@arraypress/ui-astro` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] — 2026-11-15
+
+### Added
+
+- `<SplitButton bare>`: draws nothing of its own (no colours, sizes or menu box, none of its `ui-split` classes), only the markup and its behaviour, for a site that draws its own buttons. `mainClass`, `moreClass` and `menuClass` put the site's classes on the main action, the arrow and the menu (with or without `bare`).
+- `<SplitButton>` slots: `icon` (before the main action's words, in place of the `icon` string), `arrow` (in place of the chevron) and the default slot, the menu's own items (`role="menuitem"` links and buttons, `<hr />` between groups) when there are no `items`; `items` is no longer required.
+- `<SplitButton arrowLabel>`: the arrow's name for screen readers, when it should differ from the menu's (`menuLabel`, still the default for both).
+- `<SplitButton>` passes any other attributes to its root (a `data-*` hook, an `id`).
+- `itemShows(item, menu)` (`runtime/menu`, and the main entry): whether a menu item shows, neither it nor a group round it inside the menu `hidden`.
+
+### Fixed
+
+- `popupMenu` (and so `<SplitButton>` and `<InstallCommand>`) passes over items that are `hidden`, or inside a hidden group; before, the arrow keys stopped on them and the focus went nowhere.
+- `popupMenu` keeps the keys it handles (the up and down arrows, Home, End) from the page, and the sideways arrows too while the focus is in the menu, so a page's own arrow-key shortcuts no longer fire as the focus moves through a menu. Escape already stopped there; other keys still reach the page, and a closed menu takes only the up and down arrows on its own button, which open it.
+- `popupMenu`: the down arrow on the closed menu's button opens it on the first item, and the up arrow on the last, as they say; the menu's own keys took the same press on to the second, or the one before the last.
+- `<SplitButton>`: using the main action closes an open menu.
+
+With these the Logomarks site's download buttons are `<SplitButton bare>`, and its menus need no work-arounds.
+
 ## [0.5.0] — 2026-11-15
 
 ### Added

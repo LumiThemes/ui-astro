@@ -6,11 +6,32 @@
  * arrow keys, Home and End move between its items, Escape closes it and
  * hands the focus back to the button, Tab and a click outside close it.
  * Items are the elements with a `menuitem`, `menuitemradio` or
- * `menuitemcheckbox` role that are not disabled.
+ * `menuitemcheckbox` role that are not disabled or hidden. The keys it
+ * handles go no further than the menu, so a page's own shortcuts on the
+ * arrow keys stay still while it is open.
  */
 
 /** The items the keys move between. */
 const ITEMS = ['menuitem', 'menuitemradio', 'menuitemcheckbox'].map((role) => `[role="${role}"]:not([disabled])`).join(', ');
+
+/** The keys that move between items. */
+const MOVES = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+
+/** The arrow keys a vertical menu has no use for, kept from the page while the focus is in it. */
+const SIDEWAYS = ['ArrowLeft', 'ArrowRight'];
+
+/**
+ * Whether an item shows: neither it nor anything round it inside the menu
+ * is `hidden`.
+ *
+ * @param {HTMLElement} item The item.
+ * @param {HTMLElement} menu The menu it is in.
+ * @returns {boolean} False when it or a group round it is hidden.
+ */
+export function itemShows(item, menu) {
+	for (let at = /** @type {HTMLElement | null} */ (item); at && at !== menu; at = at.parentElement) if (at.hidden) return false;
+	return true;
+}
 
 /**
  * Where a key moves the focus in a list of items: down and up wrap round
@@ -45,8 +66,8 @@ export function menuStep(at, key, length, wrap = true) {
  *   Opens it, closes it (and focuses the button with `refocus`), says whether it is open, lists its items, and stops it.
  */
 export function popupMenu(root, trigger, menu, options = {}) {
-	/** @returns {HTMLElement[]} The items the keys move between. */
-	const items = () => [.../** @type {NodeListOf<HTMLElement>} */ (menu.querySelectorAll(ITEMS))];
+	/** @returns {HTMLElement[]} The items the keys move between: those that show. */
+	const items = () => [.../** @type {NodeListOf<HTMLElement>} */ (menu.querySelectorAll(ITEMS))].filter((item) => itemShows(item, menu));
 	/** @returns {boolean} Whether the menu shows. */
 	const isOpen = () => !menu.hidden;
 
@@ -81,18 +102,22 @@ export function popupMenu(root, trigger, menu, options = {}) {
 	const onTrigger = () => (isOpen() ? close() : open());
 
 	/**
-	 * Opens the menu from the button with the arrow keys.
+	 * Opens the menu from the button with the arrow keys: down on the first
+	 * item, up on the last. The key goes no further, so the menu's own keys
+	 * do not move it on a second item.
 	 *
 	 * @param {KeyboardEvent} e The key.
 	 */
 	const onTriggerKey = (e) => {
 		if (isOpen() || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
 		e.preventDefault();
+		e.stopPropagation();
 		open(e.key === 'ArrowUp' ? 'last' : 'first');
 	};
 
 	/**
-	 * Escape, Tab and the arrow keys while the menu is open.
+	 * Escape, Tab and the arrow keys while the menu is open. The keys it
+	 * handles, and the sideways arrows from inside the menu, stop here.
 	 *
 	 * @param {KeyboardEvent} e The key.
 	 */
@@ -107,8 +132,14 @@ export function popupMenu(root, trigger, menu, options = {}) {
 			close();
 			return;
 		}
-		if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+		if (SIDEWAYS.includes(e.key) && menu.contains(/** @type {Node} */ (e.target))) {
+			e.preventDefault();
+			e.stopPropagation();
+			return;
+		}
+		if (!MOVES.includes(e.key)) return;
 		e.preventDefault();
+		e.stopPropagation();
 		const list = items();
 		const next = menuStep(list.indexOf(/** @type {HTMLElement} */ (document.activeElement)), e.key, list.length);
 		list[next]?.focus();

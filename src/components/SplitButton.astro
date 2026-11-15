@@ -9,8 +9,16 @@
  * End move through it, Escape and a click outside close it. See
  * src/runtime/split-button.js.
  *
+ * A site that draws its own buttons passes `bare` and its classes
+ * (`class`, `mainClass`, `moreClass`, `menuClass`): the component then
+ * draws nothing of its own, only the markup and the behaviour. The `icon`
+ * and `arrow` slots take the site's own icons, and the default slot its
+ * own menu items (`role="menuitem"` links and buttons, `<hr />` between
+ * groups) in place of `items`. Other attributes go on the root.
+ *
  * @example
  * <SplitButton label="Download SVG" href="/logo.svg" download items={[{ label: 'PNG', note: '512 px', action: 'png-512' }, { divider: true }, { label: 'Favicon kit', note: '.zip', href: '/favicon.zip', download: true }]} />
+ * <SplitButton bare class="split" mainClass="button" moreClass="button" menuClass="menu" label="Download" href="/logo.svg" download><Icon slot="icon" name="download" /><button type="button" role="menuitem" data-png>PNG</button></SplitButton>
  */
 import { stableId } from './uid.js';
 
@@ -46,18 +54,48 @@ interface Props {
 	action?: string;
 	/** An icon before the main action's text: trusted SVG markup, about 16px. Default none. */
 	icon?: string;
-	/** The menu (`{ label, note, href, download, newTab, action, disabled }`, or `{ divider: true }`). Required. */
-	items: Item[];
-	/** The arrow's and the menu's name for screen readers. Default `More options`. */
+	/** The menu (`{ label, note, href, download, newTab, action, disabled }`, or `{ divider: true }`). Default none: the default slot's items. */
+	items?: Item[];
+	/** The menu's name for screen readers, and the arrow's unless `arrowLabel` is given. Default `More options`. */
 	menuLabel?: string;
+	/** The arrow's name for screen readers. Default `menuLabel`. */
+	arrowLabel?: string;
 	/** Which edge the menu lines up with. Default `start`. */
 	align?: 'start' | 'end';
+	/** Draw nothing of its own: no colours, sizes or menu box, only the markup and its behaviour, styled by the page's classes. Default false. */
+	bare?: boolean;
+	/** Classes for the main action. Default none. */
+	mainClass?: string;
+	/** Classes for the arrow. Default none. */
+	moreClass?: string;
+	/** Classes for the menu. Default none. */
+	menuClass?: string;
 	/** Classes for the element. */
 	class?: string;
+	[attribute: string]: unknown;
 }
 
-const { label, href, download = false, newTab = false, action = 'main', icon, items, menuLabel = 'More options', align = 'start', class: className } = Astro.props;
+const {
+	label,
+	href,
+	download = false,
+	newTab = false,
+	action = 'main',
+	icon,
+	items,
+	menuLabel = 'More options',
+	arrowLabel = menuLabel,
+	align = 'start',
+	bare = false,
+	mainClass,
+	moreClass,
+	menuClass,
+	class: className,
+	...attributes
+} = Astro.props;
 const uid = stableId('ui-split', Astro.request, { label, href, action, items });
+/** A part's classes: the component's own (unless bare), then the page's. */
+const part = (own: string, given?: string) => [!bare && own, given];
 /** A link's attributes: its address, a download and a new tab. */
 const linkAttrs = (to: string, dl?: boolean | string, tab?: boolean) => ({
 	href: to,
@@ -66,28 +104,30 @@ const linkAttrs = (to: string, dl?: boolean | string, tab?: boolean) => ({
 });
 ---
 
-<div class:list={['ui-split', align === 'end' && 'is-end', className]} data-ui-split-button>
+<div class:list={[!bare && 'ui-split', align === 'end' && 'is-end', className]} data-ui-split-button {...attributes}>
 	{
 		href ? (
-			<a class="ui-split-main" {...linkAttrs(href, download, newTab)}>
-				{icon && <span class="ui-split-icon" aria-hidden="true" set:html={icon} />}
+			<a class:list={part('ui-split-main', mainClass)} {...linkAttrs(href, download, newTab)}>
+				<slot name="icon">{icon && <span class="ui-split-icon" aria-hidden="true" set:html={icon} />}</slot>
 				{label}
 			</a>
 		) : (
-			<button type="button" class="ui-split-main" data-action={action}>
-				{icon && <span class="ui-split-icon" aria-hidden="true" set:html={icon} />}
+			<button type="button" class:list={part('ui-split-main', mainClass)} data-action={action}>
+				<slot name="icon">{icon && <span class="ui-split-icon" aria-hidden="true" set:html={icon} />}</slot>
 				{label}
 			</button>
 		)
 	}
-	<button type="button" class="ui-split-more" data-ui-split="more" aria-haspopup="menu" aria-expanded="false" aria-controls={uid} aria-label={menuLabel}>
-		<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-			<path d="m6 9 6 6 6-6"></path>
-		</svg>
+	<button type="button" class:list={part('ui-split-more', moreClass)} data-ui-split="more" aria-haspopup="menu" aria-expanded="false" aria-controls={uid} aria-label={arrowLabel}>
+		<slot name="arrow">
+			<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<path d="m6 9 6 6 6-6"></path>
+			</svg>
+		</slot>
 	</button>
-	<div class="ui-split-menu" id={uid} data-ui-split="menu" role="menu" aria-label={menuLabel} hidden>
+	<div class:list={part('ui-split-menu', menuClass)} id={uid} data-ui-split="menu" role="menu" aria-label={menuLabel} hidden>
 		{
-			items.map((it) =>
+			!items ? <slot /> : items.map((it) =>
 				it.divider ? (
 					<hr />
 				) : it.href ? (

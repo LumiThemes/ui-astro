@@ -1,6 +1,6 @@
 {
   "name": "@arraypress/ui-astro",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Small UI pieces for Astro sites, as components: a countdown, loading skeletons, a formatted range slider, a file dropzone, a scroll-drawn timeline, CSS tooltips, an announcement bar, an FAQ, a mobile menu, a split button, a copyable install command, colour swatches, page chrome and music-shop artwork; and a form kit, a stylesheet with its script. Plain CSS and a few lines of script, with reduced motion and view transitions handled.",
   "type": "module",
   "main": "src/index.js",

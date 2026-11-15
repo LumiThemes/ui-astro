@@ -234,6 +234,7 @@ SplitButton: a main action with an arrow attached that opens a menu of further o
 
 ```astro
 <SplitButton label="Download SVG" href="/logo.svg" download items={[{ label: 'PNG', note: '512 px', action: 'png-512' }, { divider: true }, { label: 'Favicon kit', note: '.zip', href: '/favicon.zip', download: true }]} />
+<SplitButton bare class="split" mainClass="button" moreClass="button" menuClass="menu" label="Download" href="/logo.svg" download><Icon slot="icon" name="download" /><button type="button" role="menuitem" data-png>PNG</button></SplitButton>
 ```
 
 | Prop | Type | |
@@ -244,9 +245,14 @@ SplitButton: a main action with an arrow attached that opens a menu of further o
 | `newTab` | `boolean` | For a linked main action: open in a new tab. Default false. |
 | `action` | `string` | For a main action that is a button: what its `ui-action` event carries. Default `main`. |
 | `icon` | `string` | An icon before the main action's text: trusted SVG markup, about 16px. Default none. |
-| `items` (required) | `Item[]` | The menu (`{ label, note, href, download, newTab, action, disabled }`, or `{ divider: true }`). Required. |
-| `menuLabel` | `string` | The arrow's and the menu's name for screen readers. Default `More options`. |
+| `items` | `Item[]` | The menu (`{ label, note, href, download, newTab, action, disabled }`, or `{ divider: true }`). Default none: the default slot's items. |
+| `menuLabel` | `string` | The menu's name for screen readers, and the arrow's unless `arrowLabel` is given. Default `More options`. |
+| `arrowLabel` | `string` | The arrow's name for screen readers. Default `menuLabel`. |
 | `align` | `'start' \| 'end'` | Which edge the menu lines up with. Default `start`. |
+| `bare` | `boolean` | Draw nothing of its own: no colours, sizes or menu box, only the markup and its behaviour, styled by the page's classes. Default false. |
+| `mainClass` | `string` | Classes for the main action. Default none. |
+| `moreClass` | `string` | Classes for the arrow. Default none. |
+| `menuClass` | `string` | Classes for the menu. Default none. |
 | `class` | `string` | Classes for the element. |
 
 ## `<Timeline>`

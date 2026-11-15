@@ -6,7 +6,7 @@ export interface SplitActionDetail {
 
 /**
  * Starts a split button (`[data-ui-split-button]`): the arrow (`[data-ui-split="more"]`) opens its menu
- * (`[data-ui-split="menu"]`), choosing an item closes it, and a button with a `data-action` sends a
+ * (`[data-ui-split="menu"]`), choosing an item or the main action closes it, and a button with a `data-action` sends a
  * bubbling `ui-action` event from the root with `{ action }` as its detail. Returns a function that stops it.
  */
 export function splitButton(el: HTMLElement): () => void;

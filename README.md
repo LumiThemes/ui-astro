@@ -86,7 +86,7 @@ The package's main entry is the runtime the components are built on, for use wit
 | `scrollChrome()` | The one scroll listener behind `<ScrollProgress>` and `<BackToTop>` |
 | `noticeBar(el, config)`, `noticeEnded` | An announcement bar's closing and end date |
 | `installCommand(el)`, `splitButton(el)`, `mobileMenu(el, config)`, `copySwatch(el)` | The scripts behind those components; `isCurrent(href, path)` picks out the current page's link |
-| `popupMenu(root, trigger, menu)`, `menuStep` | A drop-down menu wired to its button: keys, Escape, click outside |
+| `popupMenu(root, trigger, menu)`, `menuStep`, `itemShows` | A drop-down menu wired to its button: keys (kept from the page), Escape, click outside; hidden items passed over |
 | `copyText(text)`, `flash(el)` | Copy to the clipboard (with a fallback), and a class on for a moment |
 | `parseColor`, `formatColor(color, format)`, `inkFor(color)` | Read a hex or `rgb()` colour, write it as hex, `rgb()` or `hsl()`, and pick the ink that reads on it |
 | `prefersReducedMotion()` | The reduced-motion check every piece makes |
